@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Track Order — Criminal Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #F2F3F7;
+      --white: #FFFFFF;
+      --border: #E8E9EF;
+      --text-1: #111118;
+      --text-2: #6B6C7E;
+      --text-3: #9FA0B0;
+      --red: #E8503A;
+      --orange: #F97316;
+      --green: #16A34A;
+      --green-bg: rgba(22,163,74,0.08);
+      --yellow: #D97706;
+      --yellow-bg: rgba(217,119,6,0.08);
+      --r: 14px;
+      --rs: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text-1);
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 14px; line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh; padding-bottom: 40px;
+      max-width: 480px; margin: 0 auto;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      position: sticky; top: 0; z-index: 200;
+      background: var(--white); border-bottom: 1px solid var(--border);
+    }
+    .topbar-inner {
+      padding: 0 16px; height: 58px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .back-btn {
+      width: 38px; height: 38px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; text-decoration: none; flex-shrink: 0;
+    }
+    .topbar-title { flex: 1; text-align: center; font-size: 16px; font-weight: 700; }
+    .topbar-spacer { width: 38px; }
+
+    /* SEARCH BOX */
+    .search-section {
+      padding: 16px;
+      background: var(--white); border-bottom: 1px solid var(--border);
+    }
+    .search-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-2); margin-bottom: 10px; }
+    .search-row { display: flex; gap: 8px; }
+    .search-input {
+      flex: 1; border: 1.5px solid var(--border); border-radius: var(--rs);
+      padding: 12px 14px; font-size: 14px; font-family: 'Inter', sans-serif;
+      color: var(--text-1); background: var(--bg); outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--orange); }
+    .search-btn {
+      background: var(--orange); color: #fff;
+      border: none; border-radius: var(--rs);
+      padding: 12px 18px; font-size: 14px; font-weight: 600;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .search-btn:active { opacity: 0.85; }
+
+    /* SECTION */
+    .section {
+      background: var(--white); border-radius: var(--r);
+      margin: 12px 16px 0; padding: 16px;
+    }
+    .section-label {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-2); margin-bottom: 14px;
+    }
+
+    /* STATUS BADGE */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 5px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.03em;
+    }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .status-pending   { background: var(--yellow-bg); color: var(--yellow); }
+    .status-pending .status-dot { background: var(--yellow); }
+    .status-processing { background: rgba(59,130,246,0.1); color: #2563EB; }
+    .status-processing .status-dot { background: #2563EB; animation: pulse 1.2s infinite; }
+    .status-completed { background: var(--green-bg); color: var(--green); }
+    .status-completed .status-dot { background: var(--green); }
+    .status-failed    { background: rgba(232,80,58,0.1); color: var(--red); }
+    .status-failed .status-dot { background: var(--red); }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* ORDER CARD */
+    .order-meta { display: flex; flex-direction: column; gap: 12px; }
+    .meta-row { display: flex; justify-content: space-between; align-items: flex-start; }
+    .meta-key { font-size: 12px; color: var(--text-3); margin-bottom: 2px; }
+    .meta-val { font-size: 14px; font-weight: 600; color: var(--text-1); }
+    .meta-val.mono { font-family: monospace; letter-spacing: 1px; }
+
+    /* TIMELINE */
+    .timeline { display: flex; flex-direction: column; gap: 0; }
+    .tl-item { display: flex; gap: 14px; padding-bottom: 16px; position: relative; }
+    .tl-item:last-child { padding-bottom: 0; }
+    .tl-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+    .tl-dot {
+      width: 24px; height: 24px; border-radius: 50%;
+      border: 2px solid var(--border); background: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; z-index: 1;
+    }
+    .tl-dot.done { border-color: var(--green); background: var(--green); }
+    .tl-dot.active { border-color: var(--orange); background: var(--orange); }
+    .tl-line {
+      width: 2px; flex: 1; background: var(--border);
+      margin-top: 4px; min-height: 20px;
+    }
+    .tl-line.done { background: var(--green); }
+    .tl-content { flex: 1; padding-top: 1px; }
+    .tl-title { font-size: 13px; font-weight: 600; color: var(--text-1); margin-bottom: 2px; }
+    .tl-title.muted { color: var(--text-3); font-weight: 500; }
+    .tl-time { font-size: 11px; color: var(--text-3); }
+
+    /* SCREENSHOT */
+    .screenshot-preview {
+      border-radius: var(--rs); overflow: hidden; border: 1px solid var(--border);
+    }
+    .screenshot-preview img { width: 100%; display: block; max-height: 200px; object-fit: contain; background: var(--bg); }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center; padding: 48px 24px;
+      color: var(--text-3);
+    }
+    .empty-state svg { margin-bottom: 12px; }
+    .empty-title { font-size: 15px; font-weight: 600; color: var(--text-2); margin-bottom: 4px; }
+    .empty-sub { font-size: 13px; }
+
+    /* LOADING */
+    .loader {
+      text-align: center; padding: 48px 24px;
+      color: var(--text-3); font-size: 13px;
+    }
+    .spinner {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 3px solid var(--border); border-top-color: var(--orange);
+      animation: spin 0.7s linear infinite; margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* TOAST */
+    .toast {
+      position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+      background: #1a1a2e; color: #fff;
+      padding: 10px 18px; border-radius: 8px;
+      font-size: 13px; font-weight: 500; z-index: 999;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a href="index.html" class="back-btn">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M11 14l-5-5 5-5" stroke="#111118" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <div class="topbar-title">Track Order</div>
+      <div class="topbar-spacer"></div>
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-section">
+    <div class="search-label">Enter Order ID</div>
+    <div class="search-row">
+      <input type="text" class="search-input" id="orderInput" placeholder="e.g. CRM-ABC123XYZ" autocomplete="off"/>
+      <button class="search-btn" onclick="lookupOrder()">Track</button>
+    </div>
+  </div>
+
+  <!-- RESULT AREA -->
+  <div id="resultArea"></div>
+
+  <script>
+  (function() {
+    /* ── CONFIG ── */
+    const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';
+    const SUPABASE_KEY = 'YOUR_ANON_KEY';
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    /* ── AUTO-FILL FROM URL ── */
+    const urlParams = new URLSearchParams(window.location.search);
+    const oidParam  = urlParams.get('oid');
+    if (oidParam) {
+      document.getElementById('orderInput').value = oidParam;
+      lookupOrder();
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    function statusClass(s) {
+      if (s === 'completed')  return 'status-completed';
+      if (s === 'processing') return 'status-processing';
+      if (s === 'failed')     return 'status-failed';
+      return 'status-pending';
+    }
+    function statusLabel(s) {
+      if (s === 'completed')  return 'Completed';
+      if (s === 'processing') return 'Processing';
+      if (s === 'failed')     return 'Failed';
+      return 'Pending';
+    }
+
+    function timelineSteps(status) {
+      const steps = [
+        { key: 'pending',    label: 'Order Received',          sub: 'Screenshot submitted' },
+        { key: 'processing', label: 'Payment Verified',        sub: 'Admin confirmed payment' },
+        { key: 'completed',  label: 'Diamonds Delivered',      sub: 'Sent to your account' },
+      ];
+      const order = ['pending','processing','completed'];
+      const idx   = order.indexOf(status);
+      return steps.map((s, i) => ({
+        ...s,
+        done:   i < idx || status === 'completed',
+        active: i === idx && status !== 'completed',
+        muted:  i > idx,
+      }));
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })
+        + '  ' + d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+    }
+
+    async function lookupOrder() {
+      const oid = document.getElementById('orderInput').value.trim().toUpperCase();
+      if (!oid) { showToast('Enter your Order ID'); return; }
+
+      const area = document.getElementById('resultArea');
+      area.innerHTML = '<div class="loader"><div class="spinner"></div>Looking up order...</div>';
+
+      const { data, error } = await db
+        .from('orders')
+        .select('*')
+        .eq('order_id', oid)
+        .single();
+
+      if (error || !data) {
+        area.innerHTML = `
+          <div class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="20" stroke="#D8D9E0" stroke-width="2" fill="none"/>
+              <path d="M24 16v10M24 32v1" stroke="#D8D9E0" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+            <div class="empty-title">Order not found</div>
+            <div class="empty-sub">Check the Order ID and try again</div>
+          </div>`;
+        return;
+      }
+
+      const steps = timelineSteps(data.status);
+
+      area.innerHTML = `
+        <!-- STATUS -->
+        <div class="section">
+          <div class="section-label">Order Status</div>
+          <div class="order-meta">
+            <div class="meta-row">
+              <div>
+                <div class="meta-key">Order ID</div>
+                <div class="meta-val mono">${data.order_id}</div>
+              </div>
+              <span class="status-badge ${statusClass(data.status)}">
+                <span class="status-dot"></span>
+                ${statusLabel(data.status)}
+              </span>
+            </div>
+            <div class="meta-row">
+              <div>
+                <div class="meta-key">Pack</div>
+                <div class="meta-val">${data.diamonds} Diamonds</div>
+              </div>
+              <div style="text-align:right;">
+                <div class="meta-key">Amount Paid</div>
+                <div class="meta-val">&#8377;${data.amount}</div>
+              </div>
+            </div>
+            <div>
+              <div class="meta-key">Player ID</div>
+              <div class="meta-val mono">${data.player_id}</div>
+            </div>
+            <div>
+              <div class="meta-key">Submitted</div>
+              <div class="meta-val">${formatDate(data.created_at)}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TIMELINE -->
+        <div class="section">
+          <div class="section-label">Progress</div>
+          <div class="timeline">
+            ${steps.map((s, i) => `
+              <div class="tl-item">
+                <div class="tl-left">
+                  <div class="tl-dot ${s.done ? 'done' : s.active ? 'active' : ''}">
+                    ${s.done ? `<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>` : ''}
+                  </div>
+                  ${i < steps.length - 1 ? `<div class="tl-line ${s.done ? 'done' : ''}"></div>` : ''}
+                </div>
+                <div class="tl-content">
+                  <div class="tl-title ${s.muted && !s.done && !s.active ? 'muted' : ''}">${s.label}</div>
+                  <div class="tl-time">${s.sub}</div>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>
+
+        <!-- SCREENSHOT -->
+        ${data.screenshot_url ? `
+        <div class="section">
+          <div class="section-label">Payment Screenshot</div>
+          <div class="screenshot-preview">
+            <img src="${data.screenshot_url}" alt="Payment screenshot"/>
+          </div>
+        </div>` : ''}
+
+        ${data.status === 'failed' ? `
+        <div style="padding: 0 16px; margin-top: 12px;">
+          <div class="note-box" style="background:rgba(232,80,58,0.07);border-color:rgba(232,80,58,0.2);color:#991b1b;">
+            <strong>Order Failed</strong>
+            This order was not fulfilled. Please contact support with your Order ID.
+          </div>
+        </div>` : ''}
+      `;
+    }
+
+    /* Enter key support */
+    document.getElementById('orderInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') lookupOrder();
+    });
+
+    window.lookupOrder = lookupOrder;
+  })();
+  </script>
+</body>
+</html>

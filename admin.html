@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel — Criminal Store</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg:        #0F0F13;
+      --surface:   #17171D;
+      --surface2:  #1E1E26;
+      --border:    #2A2A35;
+      --border-l:  #353540;
+      --text-1:    #F0F0F5;
+      --text-2:    #8B8B9E;
+      --text-3:    #55556A;
+      --orange:    #F97316;
+      --orange-d:  #EA580C;
+      --orange-bg: rgba(249,115,22,0.10);
+      --green:     #22C55E;
+      --green-bg:  rgba(34,197,94,0.10);
+      --yellow:    #EAB308;
+      --yellow-bg: rgba(234,179,8,0.10);
+      --blue:      #3B82F6;
+      --blue-bg:   rgba(59,130,246,0.10);
+      --red:       #EF4444;
+      --red-bg:    rgba(239,68,68,0.10);
+      --r:         12px;
+      --rs:        8px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg); color: var(--text-1);
+      font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.5;
+      -webkit-font-smoothing: antialiased; min-height: 100vh;
+    }
+
+    /* ── LOGIN SCREEN ── */
+    .login-screen {
+      position: fixed; inset: 0; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1000; padding: 24px;
+    }
+    .login-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 40px 32px; width: 100%; max-width: 380px;
+      text-align: center;
+    }
+    .login-logo {
+      font-size: 22px; font-weight: 700; letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+    .login-logo span { color: var(--orange); }
+    .login-sub { font-size: 12px; color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 32px; }
+    .login-label { font-size: 11px; font-weight: 600; color: var(--text-2); text-align: left; margin-bottom: 6px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .login-input {
+      width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
+      border-radius: var(--rs); padding: 12px 14px; font-size: 14px;
+      color: var(--text-1); font-family: 'Inter', sans-serif; outline: none; margin-bottom: 14px;
+      transition: border-color 0.2s;
+    }
+    .login-input:focus { border-color: var(--orange); }
+    .login-btn {
+      width: 100%; background: linear-gradient(135deg, var(--orange), var(--orange-d));
+      color: #fff; border: none; border-radius: var(--rs);
+      padding: 13px; font-size: 15px; font-weight: 700;
+      font-family: 'Inter', sans-serif; cursor: pointer; margin-top: 4px;
+      transition: opacity 0.2s;
+    }
+    .login-btn:hover { opacity: 0.9; }
+    .login-err { font-size: 12px; color: var(--red); margin-top: 10px; min-height: 18px; }
+
+    /* ── LAYOUT ── */
+    .app { display: none; min-height: 100vh; }
+    .app.visible { display: block; }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 0 24px; height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .topbar-brand { font-size: 17px; font-weight: 700; letter-spacing: 0.03em; }
+    .topbar-brand span { color: var(--orange); }
+    .topbar-badge {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.08em;
+      background: var(--orange-bg); color: var(--orange);
+      border: 1px solid rgba(249,115,22,0.3);
+      border-radius: 20px; padding: 3px 10px; text-transform: uppercase;
+    }
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+    .refresh-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-2); border-radius: var(--rs);
+      padding: 7px 14px; font-size: 13px; font-weight: 500;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .refresh-btn:hover { border-color: var(--orange); color: var(--orange); }
+    .logout-btn {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text-3); border-radius: var(--rs);
+      padding: 7px 14px; font-size: 13px; font-weight: 500;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .logout-btn:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── CONTENT ── */
+    .content { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+    /* ── STAT CARDS ── */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 18px 20px;
+    }
+    .stat-label { font-size: 11px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+    .stat-val { font-size: 26px; font-weight: 700; color: var(--text-1); line-height: 1; }
+    .stat-val.orange { color: var(--orange); }
+    .stat-val.yellow { color: var(--yellow); }
+    .stat-val.green  { color: var(--green); }
+    .stat-val.red    { color: var(--red); }
+
+    /* ── FILTER ROW ── */
+    .filter-row {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .filter-tab {
+      padding: 7px 16px; border-radius: 20px; border: 1.5px solid var(--border);
+      background: transparent; color: var(--text-2); font-size: 13px; font-weight: 500;
+      font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.18s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .filter-tab .tab-count {
+      background: var(--border); color: var(--text-3);
+      font-size: 10px; font-weight: 700; border-radius: 20px;
+      padding: 1px 6px; min-width: 18px; text-align: center;
+    }
+    .filter-tab.active { border-color: var(--orange); color: var(--orange); background: var(--orange-bg); }
+    .filter-tab.active .tab-count { background: var(--orange); color: #fff; }
+
+    .search-input {
+      margin-left: auto; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--rs); padding: 8px 14px; font-size: 13px;
+      color: var(--text-1); font-family: 'Inter', sans-serif; outline: none;
+      width: 220px; transition: border-color 0.2s;
+    }
+    .search-input:focus { border-color: var(--orange); }
+    .search-input::placeholder { color: var(--text-3); }
+
+    /* ── ORDERS TABLE ── */
+    .table-wrap {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); overflow: hidden;
+    }
+    .table-head {
+      display: grid;
+      grid-template-columns: 160px 120px 100px 80px 90px 1fr 180px;
+      padding: 12px 20px; border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+    .th {
+      font-size: 10px; font-weight: 700; color: var(--text-3);
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .orders-list { min-height: 200px; }
+    .order-row {
+      display: grid;
+      grid-template-columns: 160px 120px 100px 80px 90px 1fr 180px;
+      padding: 14px 20px; border-bottom: 1px solid var(--border);
+      align-items: center; gap: 12px;
+      transition: background 0.15s;
+    }
+    .order-row:last-child { border-bottom: none; }
+    .order-row:hover { background: var(--surface2); }
+
+    .order-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; font-weight: 600; color: var(--text-1);
+    }
+    .order-pid {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; color: var(--text-2);
+    }
+    .order-pack { font-size: 13px; font-weight: 600; color: var(--text-1); }
+    .order-amount { font-size: 13px; font-weight: 700; color: var(--orange); }
+    .order-time { font-size: 11px; color: var(--text-3); }
+
+    /* status badge */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .s-pending    { background: var(--yellow-bg); color: var(--yellow); }
+    .s-pending .status-dot    { background: var(--yellow); }
+    .s-processing { background: var(--blue-bg);   color: var(--blue); }
+    .s-processing .status-dot { background: var(--blue); animation: pulse 1.2s infinite; }
+    .s-completed  { background: var(--green-bg);  color: var(--green); }
+    .s-completed .status-dot  { background: var(--green); }
+    .s-failed     { background: var(--red-bg);    color: var(--red); }
+    .s-failed .status-dot     { background: var(--red); }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* action buttons */
+    .actions { display: flex; gap: 6px; align-items: center; }
+    .act-btn {
+      border: none; border-radius: 7px; padding: 6px 11px;
+      font-size: 11px; font-weight: 700; font-family: 'Inter', sans-serif;
+      cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+    .act-btn:active { transform: scale(0.95); }
+    .act-btn:hover { opacity: 0.85; }
+    .btn-approve  { background: var(--green-bg);  color: var(--green);  border: 1px solid rgba(34,197,94,0.3); }
+    .btn-process  { background: var(--blue-bg);   color: var(--blue);   border: 1px solid rgba(59,130,246,0.3); }
+    .btn-reject   { background: var(--red-bg);    color: var(--red);    border: 1px solid rgba(239,68,68,0.3); }
+    .btn-view     { background: var(--surface2);  color: var(--text-2); border: 1px solid var(--border); }
+
+    /* empty / loading */
+    .empty-state {
+      text-align: center; padding: 60px 24px; color: var(--text-3);
+    }
+    .empty-title { font-size: 15px; font-weight: 600; color: var(--text-2); margin-bottom: 4px; }
+    .loader-wrap { text-align: center; padding: 60px 24px; }
+    .spinner {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 3px solid var(--border); border-top-color: var(--orange);
+      animation: spin 0.7s linear infinite; margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75); z-index: 500;
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; width: 100%; max-width: 560px;
+      max-height: 90vh; overflow-y: auto;
+      animation: modalIn 0.2s cubic-bezier(.4,0,.2,1);
+    }
+    @keyframes modalIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-head {
+      padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .modal-title { font-size: 16px; font-weight: 700; }
+    .modal-close {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-2); cursor: pointer; font-size: 16px; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .modal-close:hover { border-color: var(--red); color: var(--red); }
+    .modal-body { padding: 20px 24px 24px; }
+
+    .detail-row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .detail-row:last-of-type { border-bottom: none; }
+    .d-key { font-size: 12px; color: var(--text-3); }
+    .d-val { font-size: 13px; font-weight: 600; color: var(--text-1); text-align: right; }
+    .d-val.mono { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+    .screenshot-wrap {
+      margin: 16px 0; border-radius: var(--rs); overflow: hidden;
+      border: 1px solid var(--border); background: var(--surface2);
+    }
+    .screenshot-wrap img {
+      width: 100%; display: block; max-height: 320px; object-fit: contain;
+    }
+    .no-screenshot {
+      padding: 32px; text-align: center; color: var(--text-3); font-size: 13px;
+    }
+
+    .note-input {
+      width: 100%; background: var(--surface2); border: 1.5px solid var(--border);
+      border-radius: var(--rs); padding: 10px 13px; font-size: 13px;
+      color: var(--text-1); font-family: 'Inter', sans-serif; outline: none;
+      resize: vertical; min-height: 72px; margin-top: 12px;
+      transition: border-color 0.2s;
+    }
+    .note-input:focus { border-color: var(--orange); }
+    .note-input::placeholder { color: var(--text-3); }
+
+    .modal-actions {
+      display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap;
+    }
+    .modal-actions .act-btn {
+      flex: 1; padding: 10px; font-size: 13px; text-align: center;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-1); padding: 12px 18px; border-radius: 10px;
+      font-size: 13px; font-weight: 500; z-index: 9999;
+      opacity: 0; transform: translateY(8px); pointer-events: none;
+      transition: all 0.25s; max-width: 300px; box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { border-color: rgba(34,197,94,0.4); color: var(--green); }
+    .toast.error   { border-color: rgba(239,68,68,0.4);  color: var(--red); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .table-head { display: none; }
+      .order-row {
+        display: flex; flex-direction: column; align-items: flex-start; gap: 8px;
+        padding: 16px 20px;
+      }
+      .actions { width: 100%; }
+      .search-input { width: 100%; margin-left: 0; }
+      .filter-row { flex-direction: column; align-items: flex-start; }
+    }
+    @media (max-width: 500px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .content { padding: 16px; }
+      .topbar { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- ── LOGIN ── -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">CRIMINAL <span>STORE</span></div>
+    <div class="login-sub">Admin Panel</div>
+    <div class="login-label">Password</div>
+    <input type="password" class="login-input" id="loginInput" placeholder="Enter admin password" autocomplete="current-password"/>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div class="app" id="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="topbar-brand">CRIMINAL <span>STORE</span></div>
+      <span class="topbar-badge">Admin</span>
+    </div>
+    <div class="topbar-right">
+      <button class="refresh-btn" onclick="loadOrders()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M12 7A5 5 0 112.5 4M2 2v3h3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Refresh
+      </button>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Total Orders</div>
+        <div class="stat-val orange" id="statTotal">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pending</div>
+        <div class="stat-val yellow" id="statPending">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Completed</div>
+        <div class="stat-val green" id="statCompleted">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Revenue</div>
+        <div class="stat-val orange" id="statRevenue">—</div>
+      </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="filter-row">
+      <button class="filter-tab active" data-filter="all" onclick="setFilter('all')">
+        All <span class="tab-count" id="cnt-all">0</span>
+      </button>
+      <button class="filter-tab" data-filter="pending" onclick="setFilter('pending')">
+        Pending <span class="tab-count" id="cnt-pending">0</span>
+      </button>
+      <button class="filter-tab" data-filter="processing" onclick="setFilter('processing')">
+        Processing <span class="tab-count" id="cnt-processing">0</span>
+      </button>
+      <button class="filter-tab" data-filter="completed" onclick="setFilter('completed')">
+        Completed <span class="tab-count" id="cnt-completed">0</span>
+      </button>
+      <button class="filter-tab" data-filter="failed" onclick="setFilter('failed')">
+        Failed <span class="tab-count" id="cnt-failed">0</span>
+      </button>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search order ID or player ID…" oninput="renderOrders()"/>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrap">
+      <div class="table-head">
+        <div class="th">Order ID</div>
+        <div class="th">Player ID</div>
+        <div class="th">Pack</div>
+        <div class="th">Amount</div>
+        <div class="th">Status</div>
+        <div class="th">Time</div>
+        <div class="th">Actions</div>
+      </div>
+      <div class="orders-list" id="ordersList">
+        <div class="loader-wrap"><div class="spinner"></div><div style="color:var(--text-3);font-size:13px;">Loading orders…</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── ORDER DETAIL MODAL ── -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="modalTitle">Order Details</div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  /* ── CONFIG ── */
+  const SUPABASE_URL  = 'https://wckqbbakgcypjtnutipl.supabase.co';
+  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indja3FiYmFrZ2N5cGp0bnV0aXBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MTczNTcsImV4cCI6MjA5NzA5MzM1N30.S8cYbhI6ZhN_veKjfY3rDK-O9P0AsuMRaCaQVBBuv68';     // anon key is fine for admin panel with password gate
+  const ADMIN_PASS    = 'Admin2026'; // change this to your own password
+
+  const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  /* ── STATE ── */
+  let allOrders   = [];
+  let activeFilter = 'all';
+
+  /* ── LOGIN ── */
+  window.doLogin = function () {
+    const val = document.getElementById('loginInput').value;
+    if (val === ADMIN_PASS) {
+      sessionStorage.setItem('admin_auth', '1');
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('app').classList.add('visible');
+      loadOrders();
+    } else {
+      document.getElementById('loginErr').textContent = 'Incorrect password.';
+    }
+  };
+
+  document.getElementById('loginInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') window.doLogin();
+  });
+
+  window.doLogout = function () {
+    sessionStorage.removeItem('admin_auth');
+    location.reload();
+  };
+
+  // auto-login if session active
+  if (sessionStorage.getItem('admin_auth') === '1') {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    loadOrders();
+  }
+
+  /* ── LOAD ORDERS ── */
+  window.loadOrders = async function () {
+    document.getElementById('ordersList').innerHTML =
+      '<div class="loader-wrap"><div class="spinner"></div><div style="color:var(--text-3);font-size:13px;">Loading orders…</div></div>';
+
+    const { data, error } = await db
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      showToast('Failed to load orders', 'error');
+      document.getElementById('ordersList').innerHTML =
+        '<div class="empty-state"><div class="empty-title">Could not load orders</div><div>' + error.message + '</div></div>';
+      return;
+    }
+
+    allOrders = data || [];
+    updateStats();
+    updateCounts();
+    renderOrders();
+  };
+
+  /* ── STATS ── */
+  function updateStats() {
+    const total     = allOrders.length;
+    const pending   = allOrders.filter(o => o.status === 'pending').length;
+    const completed = allOrders.filter(o => o.status === 'completed').length;
+    const revenue   = allOrders
+      .filter(o => o.status === 'completed')
+      .reduce((s, o) => s + parseFloat(o.amount || 0), 0);
+
+    document.getElementById('statTotal').textContent     = total;
+    document.getElementById('statPending').textContent   = pending;
+    document.getElementById('statCompleted').textContent = completed;
+    document.getElementById('statRevenue').textContent   = '₹' + revenue.toFixed(0);
+  }
+
+  /* ── COUNTS ── */
+  function updateCounts() {
+    const counts = { all: allOrders.length, pending: 0, processing: 0, completed: 0, failed: 0 };
+    allOrders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
+    Object.keys(counts).forEach(k => {
+      const el = document.getElementById('cnt-' + k);
+      if (el) el.textContent = counts[k];
+    });
+  }
+
+  /* ── FILTER ── */
+  window.setFilter = function (f) {
+    activeFilter = f;
+    document.querySelectorAll('.filter-tab').forEach(b => {
+      b.classList.toggle('active', b.dataset.filter === f);
+    });
+    renderOrders();
+  };
+
+  /* ── RENDER ── */
+  window.renderOrders = function () {
+    const search = document.getElementById('searchInput').value.trim().toLowerCase();
+    let list = allOrders;
+
+    if (activeFilter !== 'all') list = list.filter(o => o.status === activeFilter);
+    if (search) list = list.filter(o =>
+      o.order_id.toLowerCase().includes(search) ||
+      o.player_id.toLowerCase().includes(search)
+    );
+
+    const el = document.getElementById('ordersList');
+
+    if (!list.length) {
+      el.innerHTML = `<div class="empty-state">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="margin:0 auto 12px;display:block;">
+          <circle cx="20" cy="20" r="16" stroke="#2A2A35" stroke-width="2" fill="none"/>
+          <path d="M20 13v8M20 25v1" stroke="#2A2A35" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <div class="empty-title">No orders found</div>
+        <div style="font-size:13px;">Try a different filter or search</div>
+      </div>`;
+      return;
+    }
+
+    el.innerHTML = list.map(o => `
+      <div class="order-row">
+        <div class="order-id">${o.order_id}</div>
+        <div class="order-pid">${o.player_id}</div>
+        <div class="order-pack">${o.diamonds}💎</div>
+        <div class="order-amount">₹${o.amount}</div>
+        <div><span class="status-badge s-${o.status}"><span class="status-dot"></span>${statusLabel(o.status)}</span></div>
+        <div class="order-time">${formatDate(o.created_at)}</div>
+        <div class="actions">
+          <button class="act-btn btn-view" onclick="viewOrder('${o.order_id}')">View</button>
+          ${o.status === 'pending' ? `<button class="act-btn btn-process" onclick="updateStatus('${o.order_id}','processing')">Process</button>` : ''}
+          ${(o.status === 'pending' || o.status === 'processing') ? `<button class="act-btn btn-approve" onclick="updateStatus('${o.order_id}','completed')">✓ Done</button>` : ''}
+          ${(o.status !== 'failed' && o.status !== 'completed') ? `<button class="act-btn btn-reject" onclick="updateStatus('${o.order_id}','failed')">✕ Reject</button>` : ''}
+        </div>
+      </div>`).join('');
+  };
+
+  /* ── STATUS UPDATE ── */
+  window.updateStatus = async function (orderId, newStatus, note) {
+    const payload = { status: newStatus };
+    if (note) payload.admin_note = note;
+
+    const { error } = await db
+      .from('orders')
+      .update(payload)
+      .eq('order_id', orderId);
+
+    if (error) { showToast('Update failed: ' + error.message, 'error'); return; }
+
+    // update local state
+    const idx = allOrders.findIndex(o => o.order_id === orderId);
+    if (idx !== -1) { allOrders[idx].status = newStatus; if (note) allOrders[idx].admin_note = note; }
+
+    updateStats();
+    updateCounts();
+    renderOrders();
+    showToast('Order ' + orderId + ' → ' + statusLabel(newStatus), 'success');
+
+    // refresh modal if open
+    if (document.getElementById('modalOverlay').classList.contains('open')) {
+      viewOrder(orderId);
+    }
+  };
+
+  /* ── VIEW ORDER MODAL ── */
+  window.viewOrder = function (orderId) {
+    const o = allOrders.find(x => x.order_id === orderId);
+    if (!o) return;
+
+    document.getElementById('modalTitle').innerHTML =
+      `<span style="font-family:'JetBrains Mono',monospace;font-size:14px;">${o.order_id}</span>`;
+
+    document.getElementById('modalBody').innerHTML = `
+      <div class="detail-row"><span class="d-key">Status</span>
+        <span class="status-badge s-${o.status}"><span class="status-dot"></span>${statusLabel(o.status)}</span></div>
+      <div class="detail-row"><span class="d-key">Player ID</span><span class="d-val mono">${o.player_id}</span></div>
+      <div class="detail-row"><span class="d-key">Pack</span><span class="d-val">${o.diamonds} Diamonds</span></div>
+      <div class="detail-row"><span class="d-key">Amount</span><span class="d-val" style="color:var(--orange);">₹${o.amount}</span></div>
+      <div class="detail-row"><span class="d-key">Submitted</span><span class="d-val">${formatDateFull(o.created_at)}</span></div>
+      <div class="detail-row"><span class="d-key">Last Updated</span><span class="d-val">${formatDateFull(o.updated_at)}</span></div>
+      ${o.admin_note ? `<div class="detail-row"><span class="d-key">Admin Note</span><span class="d-val">${o.admin_note}</span></div>` : ''}
+
+      <div style="margin-top:16px;font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Payment Screenshot</div>
+      <div class="screenshot-wrap">
+        ${o.screenshot_url
+          ? `<img src="${o.screenshot_url}" alt="Payment screenshot" onerror="this.parentElement.innerHTML='<div class=\\'no-screenshot\\'>Image failed to load</div>'"/>`
+          : '<div class="no-screenshot">No screenshot uploaded</div>'}
+      </div>
+
+      <div style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Admin Note (optional)</div>
+      <textarea class="note-input" id="modalNote" placeholder="Add a note about this order…">${o.admin_note || ''}</textarea>
+
+      <div class="modal-actions">
+        ${(o.status === 'pending' || o.status === 'processing')
+          ? `<button class="act-btn btn-approve" onclick="modalUpdate('${o.order_id}','completed')">✓ Mark Completed</button>`
+          : ''}
+        ${o.status === 'pending'
+          ? `<button class="act-btn btn-process" onclick="modalUpdate('${o.order_id}','processing')">⟳ Processing</button>`
+          : ''}
+        ${(o.status !== 'failed' && o.status !== 'completed')
+          ? `<button class="act-btn btn-reject" onclick="modalUpdate('${o.order_id}','failed')">✕ Reject</button>`
+          : ''}
+        ${o.status === 'failed' || o.status === 'completed'
+          ? `<button class="act-btn btn-process" onclick="modalUpdate('${o.order_id}','pending')">↩ Reset to Pending</button>`
+          : ''}
+      </div>
+    `;
+
+    document.getElementById('modalOverlay').classList.add('open');
+  };
+
+  window.modalUpdate = function (orderId, status) {
+    const note = document.getElementById('modalNote').value.trim();
+    updateStatus(orderId, status, note || null);
+  };
+
+  window.closeModal = function (e) {
+    if (e.target === document.getElementById('modalOverlay')) {
+      document.getElementById('modalOverlay').classList.remove('open');
+    }
+  };
+  window.closeModalDirect = function () {
+    document.getElementById('modalOverlay').classList.remove('open');
+  };
+
+  /* ── HELPERS ── */
+  function statusLabel(s) {
+    return { pending:'Pending', processing:'Processing', completed:'Completed', failed:'Failed' }[s] || s;
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-IN', { day:'numeric', month:'short' })
+      + ' ' + d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  function formatDateFull(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' })
+      + ' at ' + d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  }
+
+  /* ── TOAST ── */
+  function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className   = 'toast' + (type ? ' ' + type : '');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+})();
+</script>
+</body>
+</html>

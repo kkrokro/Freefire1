@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Criminal Official Store — Free Fire Top Up</title>
+  <meta name="description" content="Instant Free Fire diamond top-up. Lowest prices. Secure & fast delivery."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:        #F2F3F7;
+      --white:     #FFFFFF;
+      --card:      #FFFFFF;
+      --border:    #E8E9EF;
+      --border-d:  #D8D9E0;
+      --text-1:    #111118;
+      --text-2:    #6B6C7E;
+      --text-3:    #9FA0B0;
+      --gold:      #D4A017;
+      --gold-l:    #F5C842;
+      --gold-dim:  rgba(212,160,23,0.10);
+      --gold-glow: rgba(212,160,23,0.22);
+      --purple:    #5B2D8E;
+      --purple-l:  #7B4DB5;
+      --green:     #16A34A;
+      --green-bg:  rgba(22,163,74,0.08);
+      --red:       #DC2626;
+      --r:         14px;
+      --rs:        10px;
+      --ease:      cubic-bezier(.4,0,.2,1);
+      --nav-h:     64px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text-1);
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      padding-bottom: calc(var(--nav-h) + 16px);
+    }
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-thumb { background: var(--border-d); border-radius: 2px; }
+
+    /* ─── TOP BAR ──────────────────────────────────────── */
+    .topbar {
+      position: sticky; top: 0; z-index: 200;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-inner {
+      max-width: 480px; margin: 0 auto;
+      padding: 0 16px;
+      height: 58px;
+      display: flex; align-items: center;
+    }
+
+    /* hamburger */
+    .hamburger {
+      width: 38px; height: 38px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; cursor: pointer; flex-shrink: 0;
+    }
+    .hamburger span {
+      display: block; width: 16px; height: 1.5px;
+      background: var(--text-2); border-radius: 1px;
+    }
+
+    /* logo */
+    .topbar-logo {
+      flex: 1; text-align: center;
+    }
+    .store-wordmark {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 19px; font-weight: 700;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      color: var(--text-1); line-height: 1;
+    }
+    .store-wordmark span { color: var(--gold); }
+    .store-sub {
+      font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--text-3); font-weight: 500; margin-top: 1px; display: block;
+    }
+
+    /* cart pill */
+    .cart-pill {
+      display: flex; align-items: center; gap: 5px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 7px 10px;
+      text-decoration: none; flex-shrink: 0;
+      transition: border-color .15s var(--ease);
+    }
+    .cart-pill:hover { border-color: var(--gold); }
+    .cart-count {
+      background: var(--gold); color: #fff;
+      font-size: 11px; font-weight: 700;
+      border-radius: 100px; padding: 0 6px; line-height: 18px;
+      min-width: 18px; text-align: center;
+    }
+
+    /* ─── SCROLL WRAPPER ────────────────────────────────── */
+    .page { max-width: 480px; margin: 0 auto; }
+
+    /* ─── BANNER CAROUSEL ───────────────────────────────── */
+    .carousel-wrap {
+      position: relative; overflow: hidden;
+      background: #000;
+      height: 220px;
+    }
+    .carousel-track {
+      display: flex; height: 100%;
+      transition: transform 0.50s var(--ease);
+      will-change: transform;
+    }
+    .c-slide {
+      min-width: 100%; height: 100%;
+      flex-shrink: 0; position: relative; overflow: hidden;
+    }
+    .c-slide img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover; object-position: center;
+      display: block; user-select: none;
+    }
+    .c-placeholder {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 20px; font-weight: 700;
+      letter-spacing: 0.06em; color: rgba(255,255,255,0.15);
+    }
+    .c-placeholder-1 { background: linear-gradient(135deg,#1a0a2e,#3d1459,#0d0518); }
+    .c-placeholder-2 { background: linear-gradient(135deg,#0a1a2e,#1a3a5c,#060f1c); }
+    .c-placeholder-3 { background: linear-gradient(135deg,#1a1200,#3d2e00,#0d0900); }
+
+    /* dots */
+    .c-dots {
+      position: absolute; bottom: 8px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; gap: 5px; z-index: 2;
+    }
+    .c-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: rgba(255,255,255,0.30);
+      border: none; cursor: pointer; padding: 0;
+      transition: width .25s var(--ease), border-radius .25s var(--ease), background .25s var(--ease);
+    }
+    .c-dot.on {
+      width: 20px; border-radius: 3px;
+      background: var(--gold);
+    }
+
+    /* ─── QUICK LINKS ROW ───────────────────────────────── */
+    .quick-row {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      display: flex; gap: 10px; justify-content: center;
+    }
+    .quick-item {
+      display: flex; flex-direction: column; align-items: center; gap: 7px;
+      text-decoration: none; flex: 1; max-width: 80px;
+    }
+    .quick-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .qi-orders  { background: #EEF2FF; }
+    .qi-topup   { background: #FFF7ED; }
+    .qi-redeem  { background: #FFF1F2; }
+    .qi-ranks   { background: #F5F3FF; }
+    .quick-label {
+      font-size: 11px; font-weight: 500; color: var(--text-2);
+      text-align: center; letter-spacing: 0.01em;
+    }
+
+    /* ─── SECTION HEADER ─────────────────────────────────── */
+    .sec-head {
+      display: flex; align-items: center; gap: 9px;
+      padding: 18px 16px 12px;
+    }
+    .sec-bar {
+      width: 3px; height: 16px; border-radius: 2px;
+      background: linear-gradient(to bottom, var(--gold), var(--gold-l));
+      flex-shrink: 0;
+    }
+    .sec-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 16px; font-weight: 700;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      color: var(--text-1);
+    }
+    .sec-fire { font-size: 15px; margin-right: 2px; }
+
+    /* ─── PROMO BANNER CARD ──────────────────────────────── */
+    .promo-wrap { padding: 0 14px 4px; }
+    .promo-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      display: flex; align-items: stretch;
+      overflow: hidden;
+      position: relative;
+    }
+    .promo-accent {
+      width: 4px; flex-shrink: 0;
+      background: linear-gradient(to bottom, var(--gold), var(--gold-l));
+    }
+    .promo-body { padding: 14px 14px 14px 16px; flex: 1; }
+    .promo-eyebrow {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.10em;
+      text-transform: uppercase; color: var(--gold); margin-bottom: 3px;
+    }
+    .promo-headline {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 18px; font-weight: 700; color: var(--text-1);
+      line-height: 1.15; margin-bottom: 8px;
+    }
+    .promo-countdown {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11.5px; color: var(--text-2);
+    }
+    .promo-discount {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px;
+      background: var(--gold-dim);
+      border: 1px solid rgba(212,160,23,0.22);
+      border-radius: 100px;
+      font-size: 12px; font-weight: 700; color: var(--gold);
+    }
+    .promo-img {
+      width: 120px; flex-shrink: 0;
+      object-fit: cover; display: block;
+    }
+    .promo-img-ph {
+      width: 120px; flex-shrink: 0;
+      background: linear-gradient(135deg, #2d1b69 0%, #1a0a2e 100%);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ─── PACK GRID ──────────────────────────────────────── */
+    .packs-wrap { padding: 0 14px; }
+    .packs-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .pack-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      overflow: hidden; cursor: pointer;
+      text-decoration: none; display: block;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      transition: border-color .15s var(--ease), box-shadow .15s var(--ease), transform .15s var(--ease);
+    }
+    .pack-card:hover {
+      border-color: var(--gold);
+      box-shadow: 0 4px 16px rgba(212,160,23,0.12);
+      transform: translateY(-2px);
+    }
+    .pack-thumb {
+      width: 100%; aspect-ratio: 16/9;
+      object-fit: cover; display: block;
+      background: var(--bg);
+    }
+    .pack-thumb-ph {
+      width: 100%; aspect-ratio: 16/9;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ph-ff  { background: linear-gradient(135deg,#1f1228,#3b1f5e,#1a0f2e); }
+    .ph-ff2 { background: linear-gradient(135deg,#1a1228,#2e1f50,#120d20); }
+    .pack-info { padding: 10px 12px 12px; }
+    .pack-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 14.5px; font-weight: 700; color: var(--text-1);
+      margin-bottom: 8px; letter-spacing: 0.01em;
+    }
+    .pack-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 6px;
+    }
+    .pack-price {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px; font-weight: 600; color: var(--text-1);
+    }
+    .btn-buynow {
+      padding: 5px 14px;
+      background: linear-gradient(135deg, var(--purple) 0%, var(--purple-l) 100%);
+      color: #fff; font-size: 11.5px; font-weight: 600;
+      border: none; border-radius: 7px; cursor: pointer;
+      letter-spacing: 0.02em; text-decoration: none; white-space: nowrap;
+      transition: opacity .15s var(--ease);
+    }
+    .btn-buynow:hover { opacity: 0.88; }
+
+    /* ─── GAME GRID ──────────────────────────────────────── */
+    .games-wrap { padding: 0 14px; }
+    .games-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px;
+    }
+    .game-card {
+      position: relative; border-radius: 10px; overflow: hidden;
+      aspect-ratio: 3/4; cursor: pointer; text-decoration: none; display: block;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      transition: transform .15s var(--ease), box-shadow .15s var(--ease);
+    }
+    .game-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.18); }
+    .game-card img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .game-ph {
+      width: 100%; height: 100%;
+    }
+    .ph-g1 { background: linear-gradient(160deg,#1a0a2e,#3d1459,#0d0518); }
+    .ph-g2 { background: linear-gradient(160deg,#0d1c0d,#1a3a1a,#0a120a); }
+    .ph-g3 { background: linear-gradient(160deg,#0d1a2e,#1a3356,#060e1a); }
+    .game-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.10) 55%, transparent 100%);
+    }
+    .game-meta {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 9px 9px 8px;
+    }
+    .game-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 13px; font-weight: 700; color: #fff;
+      letter-spacing: 0.02em; line-height: 1.2; margin-bottom: 5px;
+    }
+    .game-status {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 2.5px 7px; border-radius: 5px;
+    }
+    .gs-instant {
+      background: rgba(212,160,23,0.20);
+      border: 1px solid rgba(212,160,23,0.40);
+      color: var(--gold-l);
+    }
+    .gs-soon {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.55);
+    }
+    .soon-chip {
+      position: absolute; top: 7px; right: 7px;
+      background: rgba(0,0,0,0.62);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 5px; padding: 2px 7px;
+      font-size: 8.5px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* ─── BOTTOM NAV ─────────────────────────────────────── */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      max-width: 480px; margin: 0 auto;
+    }
+    .bnav-inner {
+      display: flex; align-items: center;
+      padding: 8px 0 14px;
+    }
+    .bnav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 4px;
+      cursor: pointer; text-decoration: none; padding: 2px 0;
+    }
+    .bnav-icon { opacity: 0.35; transition: opacity .15s var(--ease); }
+    .bnav-label {
+      font-size: 10px; font-weight: 500; color: var(--text-3);
+      transition: color .15s var(--ease);
+    }
+    .bnav-item.active .bnav-icon { opacity: 1; }
+    .bnav-item.active .bnav-label { color: var(--purple); }
+
+    /* center home button */
+    .bnav-home {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 4px;
+      cursor: pointer; text-decoration: none;
+    }
+    .bnav-home-btn {
+      width: 50px; height: 50px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple) 0%, var(--purple-l) 100%);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(91,45,142,0.40);
+      margin-top: -18px;
+    }
+    .bnav-home-label {
+      font-size: 10px; font-weight: 500; color: var(--purple);
+    }
+
+    /* ─── WA FLOAT ───────────────────────────────────────── */
+    .wa-float {
+      position: fixed; bottom: 82px; right: 18px; z-index: 190;
+      width: 50px; height: 50px; border-radius: 50%;
+      background: #25D366;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 18px rgba(37,211,102,0.42);
+      text-decoration: none;
+      transition: transform .15s var(--ease);
+    }
+    .wa-float:hover { transform: scale(1.07); }
+
+    /* responsive */
+    @media (min-width: 481px) {
+      .bottom-nav { left: 50%; right: auto; transform: translateX(-50%); width: 480px; }
+      .wa-float   { right: calc(50% - 224px); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <button class="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+
+    <div class="topbar-logo">
+      <div class="store-wordmark"><span>Criminal</span> Official</div>
+      <span class="store-sub">Free Fire Store</span>
+    </div>
+
+    <a href="track.html" class="cart-pill" aria-label="Cart">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M1.5 1.5h2L5 8.5h7L13 5H4.5" stroke="#6B6C7E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="6.5" cy="11.5" r="1.2" fill="#6B6C7E"/>
+        <circle cx="10.5" cy="11.5" r="1.2" fill="#6B6C7E"/>
+      </svg>
+      <span class="cart-count">0</span>
+    </a>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- BANNER CAROUSEL -->
+  <div class="carousel-wrap">
+    <div class="carousel-track" id="ctrack">
+
+      <div class="c-slide">
+        <img src="banner1.png" alt="Free Fire Banner 1"
+          onerror="this.outerHTML='<div class=\'c-placeholder c-placeholder-1\'>Free Fire Max — Top Up Now</div>'"/>
+      </div>
+
+      <div class="c-slide">
+        <img src="banner2.png" alt="Free Fire Banner 2"
+          onerror="this.outerHTML='<div class=\'c-placeholder c-placeholder-2\'>Diamond Deals — Criminal Store</div>'"/>
+      </div>
+
+      <div class="c-slide">
+        <img src="banner3.png" alt="Free Fire Banner 3"
+          onerror="this.outerHTML='<div class=\'c-placeholder c-placeholder-3\'>Instant Delivery. Safe. Verified.</div>'"/>
+      </div>
+
+    </div>
+    <div class="c-dots" id="cdots"></div>
+  </div>
+
+  <!-- QUICK LINKS -->
+  <div class="quick-row">
+    <a href="track.html" class="quick-item">
+      <div class="quick-icon qi-orders">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <rect x="4" y="4" width="16" height="16" rx="3" fill="#4F46E5" opacity="0.15"/>
+          <rect x="4" y="4" width="16" height="16" rx="3" stroke="#4F46E5" stroke-width="1.4" fill="none"/>
+          <path d="M8 9h8M8 12h8M8 15h4" stroke="#4F46E5" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="quick-label">Orders</span>
+    </a>
+    <a href="freefire.html" class="quick-item">
+      <div class="quick-icon qi-topup">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="8" fill="#F97316" opacity="0.12"/>
+          <circle cx="12" cy="12" r="8" stroke="#F97316" stroke-width="1.4" fill="none"/>
+          <path d="M12 8v8M9 11l3-3 3 3" stroke="#F97316" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="quick-label">Top Up</span>
+    </a>
+    <a href="#" class="quick-item">
+      <div class="quick-icon qi-redeem">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <rect x="4" y="7" width="16" height="12" rx="2.5" fill="#F43F5E" opacity="0.12"/>
+          <rect x="4" y="7" width="16" height="12" rx="2.5" stroke="#F43F5E" stroke-width="1.4" fill="none"/>
+          <path d="M12 4v3M8 4v3M16 4v3" stroke="#F43F5E" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M8 12h8" stroke="#F43F5E" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="quick-label">Redeem</span>
+    </a>
+    <a href="#" class="quick-item">
+      <div class="quick-icon qi-ranks">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M12 4l1.8 5.5H19l-4.5 3.3 1.7 5.2L12 15l-4.2 3 1.7-5.2L5 9.5h5.2L12 4z" fill="#7C3AED" opacity="0.15"/>
+          <path d="M12 4l1.8 5.5H19l-4.5 3.3 1.7 5.2L12 15l-4.2 3 1.7-5.2L5 9.5h5.2L12 4z" stroke="#7C3AED" stroke-width="1.3" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <span class="quick-label">Ranks</span>
+    </a>
+  </div>
+
+  <!-- FEATURED DEAL -->
+  <div class="sec-head">
+    <span class="sec-bar"></span>
+    <span class="sec-title">Featured Deal</span>
+  </div>
+
+  <div class="promo-wrap">
+    <div class="promo-card">
+      <div class="promo-accent"></div>
+      <div class="promo-body">
+        <div class="promo-eyebrow">Free Fire Max &nbsp;&middot;&nbsp; Best Value</div>
+        <div class="promo-headline">1540 Diamonds<br/>Only &#8377;750</div>
+        <span class="promo-discount">
+          <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+            <polygon points="5,1 9,3 9,7 5,9 1,7 1,3" fill="var(--gold)" opacity="0.8"/>
+          </svg>
+          Top Seller This Week
+        </span>
+        <div class="promo-countdown" style="margin-top:8px;">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <circle cx="6" cy="6" r="4.5" stroke="#9FA0B0" stroke-width="1.1" fill="none"/>
+            <path d="M6 3.5v3l1.5 1" stroke="#9FA0B0" stroke-width="1.1" stroke-linecap="round"/>
+          </svg>
+          <span style="color:var(--text-3);font-size:11px;">Instant Delivery</span>
+        </div>
+      </div>
+      <div class="promo-img-ph">
+        <img src="dia.jpg" alt="Featured Pack" class="promo-img"
+          onerror="this.outerHTML='<div class=\'promo-img-ph\'><svg width=\'44\' height=\'44\' viewBox=\'0 0 44 44\' fill=\'none\'><polygon points=\'22,3 40,12.5 40,31.5 22,41 4,31.5 4,12.5\' stroke=\'#D4A017\' stroke-width=\'1.5\' fill=\'rgba(212,160,23,0.08)\'/><circle cx=\'22\' cy=\'22\' r=\'6\' fill=\'#D4A017\' opacity=\'0.6\'/></svg></div>'"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRENDING PACKS -->
+  <div class="sec-head">
+    <span class="sec-bar"></span>
+    <span class="sec-title">Trending Packs</span>
+  </div>
+
+  <div class="packs-wrap">
+    <div class="packs-grid">
+
+      <a href="freefire.html" class="pack-card">
+        <div class="pack-thumb-ph ph-ff">
+          <img src="dia.jpg" alt="200 Diamonds" class="pack-thumb"
+            onerror="this.parentElement.innerHTML='<svg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' fill=\'none\'><polygon points=\'20,3 36,11.5 36,28.5 20,37 4,28.5 4,11.5\' fill=\'rgba(212,160,23,0.12)\' stroke=\'#D4A017\' stroke-width=\'1.3\'/><circle cx=\'20\' cy=\'20\' r=\'5\' fill=\'#D4A017\' opacity=\'0.7\'/></svg>'"/>
+        </div>
+        <div class="pack-info">
+          <div class="pack-name">200 Diamonds</div>
+          <div class="pack-row">
+            <span class="pack-price">&#8377;99</span>
+            <span class="btn-buynow">BUY NOW</span>
+          </div>
+        </div>
+      </a>
+
+      <a href="freefire.html" class="pack-card">
+        <div class="pack-thumb-ph ph-ff2">
+          <img src="dia.jpg" alt="500 Diamonds" class="pack-thumb"
+            onerror="this.parentElement.innerHTML='<svg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' fill=\'none\'><polygon points=\'20,3 36,11.5 36,28.5 20,37 4,28.5 4,11.5\' fill=\'rgba(212,160,23,0.12)\' stroke=\'#D4A017\' stroke-width=\'1.3\'/><circle cx=\'20\' cy=\'20\' r=\'5\' fill=\'#D4A017\' opacity=\'0.7\'/></svg>'"/>
+        </div>
+        <div class="pack-info">
+          <div class="pack-name">500 Diamonds</div>
+          <div class="pack-row">
+            <span class="pack-price">&#8377;289</span>
+            <span class="btn-buynow">BUY NOW</span>
+          </div>
+        </div>
+      </a>
+
+      <a href="freefire.html" class="pack-card">
+        <div class="pack-thumb-ph ph-ff">
+          <img src="dia.jpg" alt="1000 Diamonds" class="pack-thumb"
+            onerror="this.parentElement.innerHTML='<svg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' fill=\'none\'><polygon points=\'20,3 36,11.5 36,28.5 20,37 4,28.5 4,11.5\' fill=\'rgba(212,160,23,0.12)\' stroke=\'#D4A017\' stroke-width=\'1.3\'/><circle cx=\'20\' cy=\'20\' r=\'5\' fill=\'#D4A017\' opacity=\'0.7\'/></svg>'"/>
+        </div>
+        <div class="pack-info">
+          <div class="pack-name">1000 Diamonds</div>
+          <div class="pack-row">
+            <span class="pack-price">&#8377;549</span>
+            <span class="btn-buynow">BUY NOW</span>
+          </div>
+        </div>
+      </a>
+
+      <a href="freefire.html" class="pack-card">
+        <div class="pack-thumb-ph ph-ff2">
+          <img src="dia.jpg" alt="2400 Diamonds" class="pack-thumb"
+            onerror="this.parentElement.innerHTML='<svg width=\'40\' height=\'40\' viewBox=\'0 0 40 40\' fill=\'none\'><polygon points=\'20,3 36,11.5 36,28.5 20,37 4,28.5 4,11.5\' fill=\'rgba(212,160,23,0.12)\' stroke=\'#D4A017\' stroke-width=\'1.3\'/><circle cx=\'20\' cy=\'20\' r=\'5\' fill=\'#D4A017\' opacity=\'0.7\'/></svg>'"/>
+        </div>
+        <div class="pack-info">
+          <div class="pack-name">2400 Diamonds</div>
+          <div class="pack-row">
+            <span class="pack-price">&#8377;939</span>
+            <span class="btn-buynow">BUY NOW</span>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- TOP UP GAMES -->
+  <div class="sec-head" style="padding-top:22px;">
+    <span class="sec-bar"></span>
+    <span class="sec-title">Top Up Games</span>
+  </div>
+
+  <div class="games-wrap" style="padding-bottom:12px;">
+    <div class="games-grid">
+
+      <!-- Free Fire — LIVE -->
+      <a href="freefire.html" class="game-card">
+        <div class="game-ph ph-g1">
+          <img src="ff.jpg" alt="Free Fire Max"
+            onerror="this.style.display='none'"/>
+        </div>
+        <div class="game-overlay"></div>
+        <div class="game-meta">
+          <div class="game-name">Free Fire Max</div>
+          <span class="game-status gs-instant">
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+              <path d="M4.5 1L2 4.5h2.5L3 7 6.5 3H4L4.5 1z" fill="currentColor"/>
+            </svg>
+            Instant
+          </span>
+        </div>
+      </a>
+
+      <!-- BGMI — Soon -->
+      <div class="game-card" style="cursor:default;">
+        <div class="game-ph ph-g2">
+          <img src="bgmi.jpg" alt="BGMI"
+            onerror="this.style.display='none'"/>
+        </div>
+        <div class="game-overlay"></div>
+        <span class="soon-chip">SOON</span>
+        <div class="game-meta">
+          <div class="game-name">BGMI</div>
+          <span class="game-status gs-soon">Coming Soon</span>
+        </div>
+      </div>
+
+      <!-- MLBB — Soon -->
+      <div class="game-card" style="cursor:default;">
+        <div class="game-ph ph-g3">
+          <img src="mlbb.jpg" alt="Mobile Legends"
+            onerror="this.style.display='none'"/>
+        </div>
+        <div class="game-overlay"></div>
+        <span class="soon-chip">SOON</span>
+        <div class="game-meta">
+          <div class="game-name">Mobile Legends</div>
+          <span class="game-status gs-soon">Coming Soon</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<!-- WA FLOAT -->
+<a href="https://wa.me/YOUR_WHATSAPP" target="_blank" rel="noopener" class="wa-float" aria-label="WhatsApp">
+  <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+    <path d="M16 2C8.27 2 2 8.27 2 16c0 2.45.64 4.87 1.87 6.99L2 30l7.26-1.84A13.93 13.93 0 0016 30c7.73 0 14-6.27 14-14S23.73 2 16 2z" fill="white"/>
+    <path d="M23 21.5c-.3.85-1.5 1.55-2.45 1.75-.65.13-1.5.24-4.35-.93-3.65-1.5-6-5.2-6.2-5.45-.18-.25-1.5-2-1.5-3.8s.95-2.7 1.3-3.07c.3-.33.65-.42.87-.42h.62c.2 0 .47-.07.73.56.28.65.95 2.32 1.03 2.49.08.17.13.37.03.6-.1.22-.15.36-.3.55l-.45.53c-.15.17-.3.35-.13.68.17.32.77 1.27 1.65 2.05 1.13 1 2.1 1.33 2.4 1.48.3.15.47.13.65-.07l.88-1.03c.22-.27.42-.22.7-.13.28.1 1.77.83 2.07.98.3.15.5.22.57.35.07.13.07.77-.23 1.62z" fill="#25D366"/>
+  </svg>
+</a>
+
+<!-- BOTTOM NAV — 4 items, no profile -->
+<nav class="bottom-nav">
+  <div class="bnav-inner">
+
+    <a href="#" class="bnav-item" aria-label="Alerts">
+      <svg class="bnav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M12 4a6 6 0 00-6 6v3.5L4.5 16h15L18 13.5V10a6 6 0 00-6-6z" stroke="#6B6C7E" stroke-width="1.4" fill="none"/>
+        <path d="M10 19a2 2 0 004 0" stroke="#6B6C7E" stroke-width="1.4" fill="none"/>
+      </svg>
+      <span class="bnav-label">Alerts</span>
+    </a>
+
+    <a href="track.html" class="bnav-item" aria-label="Orders">
+      <svg class="bnav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <rect x="4" y="4" width="16" height="16" rx="3" stroke="#6B6C7E" stroke-width="1.4" fill="none"/>
+        <path d="M8 9h8M8 12h8M8 15h4" stroke="#6B6C7E" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      <span class="bnav-label">Orders</span>
+    </a>
+
+    <a href="index.html" class="bnav-home" aria-label="Home">
+      <div class="bnav-home-btn">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M3 10.5L11 3l8 7.5V20a1 1 0 01-1 1H14v-5H8v5H4a1 1 0 01-1-1V10.5z" fill="white"/>
+        </svg>
+      </div>
+      <span class="bnav-home-label">Home</span>
+    </a>
+
+    <a href="freefire.html" class="bnav-item" aria-label="Top Up">
+      <svg class="bnav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M3 3h5l1.5 9.5L11 5h2l1.5 7.5L16 3h5" stroke="#6B6C7E" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M3 19.5h18" stroke="#6B6C7E" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <span class="bnav-label">Top Up</span>
+    </a>
+
+    <a href="freefire.html" class="bnav-item" aria-label="Cart">
+      <svg class="bnav-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M2 2h2.5l2.2 9.5h9.8l2-6H7" stroke="#6B6C7E" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="9" cy="18" r="1.5" stroke="#6B6C7E" stroke-width="1.3" fill="none"/>
+        <circle cx="15" cy="18" r="1.5" stroke="#6B6C7E" stroke-width="1.3" fill="none"/>
+      </svg>
+      <span class="bnav-label">Cart</span>
+    </a>
+
+  </div>
+</nav>
+
+<script src="app.js"></script>
+</body>
+</html>

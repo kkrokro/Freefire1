@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Checkout — Criminal Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --bg: #F2F3F7;
+      --white: #FFFFFF;
+      --border: #E8E9EF;
+      --text-1: #111118;
+      --text-2: #6B6C7E;
+      --text-3: #9FA0B0;
+      --red: #E8503A;
+      --orange: #F97316;
+      --green: #16A34A;
+      --green-bg: rgba(22,163,74,0.08);
+      --r: 14px;
+      --rs: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text-1);
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 14px; line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh; padding-bottom: 110px;
+      max-width: 480px; margin: 0 auto;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      position: sticky; top: 0; z-index: 200;
+      background: var(--white); border-bottom: 1px solid var(--border);
+    }
+    .topbar-inner {
+      padding: 0 16px; height: 58px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .back-btn {
+      width: 38px; height: 38px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; text-decoration: none; flex-shrink: 0;
+    }
+    .topbar-title { flex: 1; text-align: center; font-size: 16px; font-weight: 700; }
+    .topbar-spacer { width: 38px; }
+
+    /* CARDS */
+    .section {
+      background: var(--white); border-radius: var(--r);
+      margin: 12px 16px 0; padding: 16px;
+    }
+    .section-label {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-2); margin-bottom: 14px;
+    }
+
+    /* ORDER SUMMARY */
+    .order-row { display: flex; align-items: center; gap: 14px; }
+    .order-thumb {
+      width: 52px; height: 52px; border-radius: 12px;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      flex-shrink: 0; overflow: hidden;
+    }
+    .order-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .order-info { flex: 1; }
+    .order-game { font-size: 12px; color: var(--text-2); }
+    .order-pack { font-size: 15px; font-weight: 700; color: var(--text-1); margin: 2px 0; }
+    .order-price { font-size: 18px; font-weight: 700; color: var(--red); }
+
+    /* INFO ROWS */
+    .info-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .info-key { font-size: 13px; color: var(--text-2); }
+    .info-val { font-size: 13px; font-weight: 600; color: var(--text-1); }
+    .info-val.green { color: var(--green); }
+
+    /* PLAYER ID */
+    .pid-display {
+      background: var(--bg); border-radius: var(--rs);
+      padding: 12px 14px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .pid-label-sm { font-size: 12px; color: var(--text-2); margin-bottom: 2px; }
+    .pid-value { font-size: 16px; font-weight: 700; color: var(--text-1); font-family: monospace; letter-spacing: 1px; }
+    .pid-edit { font-size: 12px; font-weight: 600; color: var(--orange); cursor: pointer; text-decoration: none; }
+
+    /* PRICE BREAKDOWN */
+    .price-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 9px 0; border-bottom: 1px solid var(--border);
+    }
+    .price-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .price-key { font-size: 13px; color: var(--text-2); }
+    .price-val { font-size: 13px; font-weight: 600; color: var(--text-1); }
+    .price-row.total .price-key { font-size: 15px; font-weight: 700; color: var(--text-1); }
+    .price-row.total .price-val { font-size: 17px; font-weight: 700; color: var(--red); }
+
+    /* UPI PAYMENT */
+    .upi-box {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 12px; padding: 4px 0;
+    }
+
+    /* PAY METHOD TOGGLE */
+    .pay-toggle {
+      display: flex; gap: 8px; margin-bottom: 16px;
+    }
+    .pay-tab {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 11px 10px; border-radius: 12px;
+      border: 1.5px solid var(--border); background: var(--bg);
+      font-size: 13px; font-weight: 600; color: var(--text-2);
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      transition: all 0.18s;
+    }
+    .pay-tab.active {
+      background: rgba(249,115,22,0.08);
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+
+    /* QR CAUTION */
+    .qr-caution {
+      width: 100%; display: flex; align-items: center; gap: 8px;
+      background: rgba(217,119,6,0.08); border: 1px solid rgba(217,119,6,0.25);
+      border-radius: 10px; padding: 10px 13px;
+      font-size: 12px; color: #92400E; line-height: 1.5;
+    }
+    .qr-caution strong { font-weight: 700; color: #B45309; font-size: 13px; }
+    .qr-caution.expired {
+      background: rgba(232,80,58,0.08); border-color: rgba(232,80,58,0.3);
+      color: #991b1b;
+    }
+    .qr-caution.expired strong { color: var(--red); }
+    .qr-frame {
+      width: 200px; height: 200px; border-radius: 12px;
+      border: 2px solid var(--border); overflow: hidden;
+      background: var(--bg); display: flex; align-items: center; justify-content: center;
+    }
+    .qr-frame img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .qr-placeholder {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      color: var(--text-3); font-size: 12px; text-align: center; padding: 16px;
+    }
+    .upi-id-pill {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 14px;
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; gap: 10px;
+    }
+    .upi-id-label { font-size: 11px; color: var(--text-3); margin-bottom: 2px; }
+    .upi-id-val { font-size: 14px; font-weight: 700; color: var(--text-1); font-family: monospace; }
+    .copy-btn {
+      font-size: 11px; font-weight: 600; color: var(--orange);
+      background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.2);
+      border-radius: 6px; padding: 5px 10px; cursor: pointer; white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .copy-btn:active { opacity: 0.7; }
+    .upi-steps {
+      background: rgba(249,115,22,0.06); border-radius: var(--rs);
+      padding: 12px 14px; width: 100%; font-size: 12px; color: var(--text-2); line-height: 1.8;
+    }
+    .upi-steps strong { display: block; color: var(--text-1); margin-bottom: 4px; font-size: 13px; }
+
+    /* SCREENSHOT REMINDER BANNER */
+    .screenshot-reminder {
+      width: 100%;
+      display: flex; align-items: flex-start; gap: 11px;
+      background: linear-gradient(135deg, rgba(232,80,58,0.09) 0%, rgba(232,80,58,0.05) 100%);
+      border: 1.5px solid rgba(232,80,58,0.28);
+      border-radius: 11px; padding: 12px 14px;
+      animation: reminderPulse 2.4s ease-in-out infinite;
+    }
+    @keyframes reminderPulse {
+      0%, 100% { border-color: rgba(232,80,58,0.28); }
+      50%       { border-color: rgba(232,80,58,0.55); }
+    }
+    .screenshot-reminder-icon {
+      width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+      background: rgba(232,80,58,0.12);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .screenshot-reminder-text { flex: 1; }
+    .screenshot-reminder-title {
+      font-size: 13px; font-weight: 700; color: var(--red);
+      margin-bottom: 3px; letter-spacing: -0.01em;
+    }
+    .screenshot-reminder-sub {
+      font-size: 12px; color: #92400E; line-height: 1.55;
+    }
+    .screenshot-reminder-sub strong { color: var(--red); font-weight: 700; }
+
+    /* UPLOAD SECTION ALERT BANNER */
+    .upload-alert {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(232,80,58,0.06); border: 1px solid rgba(232,80,58,0.2);
+      border-radius: 9px; padding: 10px 13px; margin-bottom: 12px;
+      font-size: 12px; color: #7f1d1d; line-height: 1.5;
+    }
+    .upload-alert svg { flex-shrink: 0; }
+    .upload-alert strong { color: var(--red); font-weight: 700; }
+
+    /* UPLOAD SECTION */
+    .upload-area {
+      border: 2px dashed var(--border); border-radius: var(--rs);
+      padding: 24px 16px; text-align: center; cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .upload-area:hover, .upload-area.drag { border-color: var(--orange); background: rgba(249,115,22,0.04); }
+    .upload-area.has-file { border-color: var(--green); background: var(--green-bg); }
+    .upload-icon { margin-bottom: 8px; }
+    .upload-title { font-size: 14px; font-weight: 600; color: var(--text-1); margin-bottom: 3px; }
+    .upload-sub { font-size: 12px; color: var(--text-3); }
+    .upload-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+    .upload-preview {
+      display: none; margin-top: 12px;
+      border-radius: 8px; overflow: hidden;
+      max-height: 160px;
+    }
+    .upload-preview img { width: 100%; max-height: 160px; object-fit: contain; display: block; }
+    .upload-name {
+      display: none; font-size: 12px; font-weight: 600;
+      color: var(--green); margin-top: 8px;
+    }
+
+    /* NOTE BOX */
+    .note-box {
+      background: rgba(249,115,22,0.07); border: 1px solid rgba(249,115,22,0.2);
+      border-radius: var(--rs); padding: 12px 14px;
+      font-size: 12px; color: #92400E; line-height: 1.6;
+    }
+    .note-box strong { display: block; margin-bottom: 3px; font-size: 13px; }
+
+    /* CONFIRM BAR */
+    .confirm-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--white); border-top: 1px solid var(--border);
+      padding: 12px 16px 16px;
+      max-width: 480px; margin: 0 auto; z-index: 100;
+    }
+    .confirm-btn {
+      display: block; width: 100%;
+      background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+      color: #fff; border: none; border-radius: 14px;
+      padding: 16px; font-size: 16px; font-weight: 700;
+      font-family: 'Inter', sans-serif; cursor: pointer; text-align: center;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .confirm-btn:disabled { background: var(--border); color: var(--text-3); cursor: default; }
+    .confirm-btn:not(:disabled):active { opacity: 0.92; transform: scale(0.98); }
+    .secure-note {
+      text-align: center; margin-top: 8px;
+      font-size: 11px; color: var(--text-3);
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+    }
+
+    /* SUCCESS OVERLAY */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55); z-index: 500;
+      align-items: flex-end; justify-content: center;
+    }
+    .overlay.show { display: flex; }
+    .sheet {
+      background: var(--white); border-radius: 20px 20px 0 0;
+      padding: 32px 24px 40px; width: 100%; max-width: 480px;
+      text-align: center;
+      animation: slideUp 0.3s cubic-bezier(.4,0,.2,1);
+    }
+    @keyframes slideUp {
+      from { transform: translateY(60px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+    .success-icon-wrap {
+      width: 68px; height: 68px; border-radius: 50%;
+      background: var(--green-bg); border: 2px solid var(--green);
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+    }
+    .success-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; color: var(--text-1); }
+    .success-sub { font-size: 13px; color: var(--text-2); margin-bottom: 16px; line-height: 1.6; }
+    .order-id-box {
+      background: var(--bg); border-radius: 10px; padding: 12px 16px;
+      margin-bottom: 24px; text-align: left;
+    }
+    .oid-label { font-size: 11px; color: var(--text-3); margin-bottom: 3px; }
+    .oid-val { font-size: 15px; font-weight: 700; color: var(--text-1); font-family: monospace; letter-spacing: 1px; }
+    .oid-hint { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+    .sheet-btn {
+      display: block; width: 100%;
+      background: var(--text-1); color: #fff;
+      border: none; border-radius: 12px;
+      padding: 14px; font-size: 15px; font-weight: 700;
+      font-family: 'Inter', sans-serif; cursor: pointer; margin-bottom: 10px;
+    }
+    .sheet-btn-sec {
+      display: block; width: 100%;
+      background: transparent; color: var(--orange);
+      border: 1.5px solid rgba(249,115,22,0.3); border-radius: 12px;
+      padding: 13px; font-size: 14px; font-weight: 600;
+      font-family: 'Inter', sans-serif; cursor: pointer; text-decoration: none;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+      background: #1a1a2e; color: #fff;
+      padding: 10px 18px; border-radius: 8px;
+      font-size: 13px; font-weight: 500; z-index: 999;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+
+    /* VERIFICATION OVERLAY */
+    .verify-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.65); z-index: 600;
+      align-items: flex-end; justify-content: center;
+    }
+    .verify-overlay.show { display: flex; }
+    .verify-sheet {
+      background: var(--white); border-radius: 24px 24px 0 0;
+      padding: 28px 24px 40px; width: 100%; max-width: 480px;
+      animation: slideUp 0.32s cubic-bezier(.4,0,.2,1);
+    }
+    .verify-drag-handle {
+      width: 36px; height: 4px; background: var(--border);
+      border-radius: 2px; margin: 0 auto 24px;
+    }
+
+    /* scanning phase */
+    .verify-scan-wrap { text-align: center; }
+    .verify-scan-icon {
+      width: 72px; height: 72px; border-radius: 18px;
+      background: rgba(249,115,22,0.08); border: 1.5px solid rgba(249,115,22,0.2);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px; position: relative; overflow: hidden;
+    }
+    .verify-scan-icon::after {
+      content: ''; position: absolute;
+      left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--orange), transparent);
+      animation: scanLine 1.2s ease-in-out infinite;
+      top: 0;
+    }
+    @keyframes scanLine {
+      0%   { top: 0%; opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 1; }
+      100% { top: 100%; opacity: 0; }
+    }
+    .verify-title { font-size: 17px; font-weight: 700; color: var(--text-1); margin-bottom: 4px; }
+    .verify-sub { font-size: 13px; color: var(--text-2); margin-bottom: 22px; }
+
+    /* check steps */
+    .verify-steps { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+    .vstep {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--bg); border-radius: 10px;
+      padding: 11px 14px; transition: background 0.3s;
+    }
+    .vstep.done { background: var(--green-bg); }
+    .vstep.fail { background: rgba(232,80,58,0.07); }
+    .vstep-icon {
+      width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .vstep-icon .spin {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid var(--border); border-top-color: var(--orange);
+      animation: vspin 0.7s linear infinite;
+    }
+    @keyframes vspin { to { transform: rotate(360deg); } }
+    .vstep-icon .tick { display: none; }
+    .vstep-icon .cross { display: none; }
+    .vstep.done .vstep-icon .spin  { display: none; }
+    .vstep.done .vstep-icon .tick  { display: block; }
+    .vstep.fail .vstep-icon .spin  { display: none; }
+    .vstep.fail .vstep-icon .cross { display: block; }
+    .vstep-label { font-size: 13px; font-weight: 500; color: var(--text-2); flex: 1; }
+    .vstep.done .vstep-label { color: var(--green); }
+    .vstep.fail .vstep-label { color: var(--red); }
+    .vstep-status { font-size: 11px; font-weight: 600; color: var(--text-3); }
+    .vstep.done .vstep-status { color: var(--green); }
+    .vstep.fail .vstep-status { color: var(--red); }
+
+    /* result phase */
+    .verify-result { display: none; text-align: center; }
+    .verify-result.show { display: block; }
+    .verify-result-icon {
+      width: 68px; height: 68px; border-radius: 50%;
+      background: rgba(232,80,58,0.1); border: 2px solid var(--red);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+    }
+    .verify-result-title { font-size: 18px; font-weight: 700; color: var(--text-1); margin-bottom: 6px; }
+    .verify-result-sub {
+      font-size: 13px; color: var(--text-2); line-height: 1.65; margin-bottom: 20px;
+    }
+    .verify-result-sub strong { color: var(--red); }
+    .verify-reasons {
+      background: rgba(232,80,58,0.06); border: 1px solid rgba(232,80,58,0.18);
+      border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; text-align: left;
+    }
+    .verify-reasons-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--red); margin-bottom: 10px;
+    }
+    .verify-reason-item {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 12px; color: #7f1d1d; line-height: 1.5; margin-bottom: 7px;
+    }
+    .verify-reason-item:last-child { margin-bottom: 0; }
+    .verify-reason-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--red); flex-shrink: 0; margin-top: 6px;
+    }
+    .verify-support-box {
+      background: rgba(249,115,22,0.07); border: 1px solid rgba(249,115,22,0.2);
+      border-radius: 10px; padding: 12px 14px; margin-bottom: 20px; text-align: left;
+      font-size: 12px; color: #92400E; line-height: 1.6;
+    }
+    .verify-support-box strong { display: block; font-size: 13px; color: var(--orange); margin-bottom: 2px; }
+    .verify-dismiss-btn {
+      display: block; width: 100%;
+      background: var(--text-1); color: #fff;
+      border: none; border-radius: 12px;
+      padding: 14px; font-size: 15px; font-weight: 700;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+    }
+    .verify-dismiss-btn:active { opacity: 0.88; }
+
+    /* PAY NOW BUTTON */
+    .pay-now-btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 14px 16px;
+      background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+      color: #fff; border: none; border-radius: 13px;
+      font-size: 15px; font-weight: 700; font-family: 'Inter', sans-serif;
+      cursor: pointer; text-decoration: none;
+      transition: opacity 0.18s, transform 0.12s;
+      position: relative; overflow: hidden;
+    }
+    .pay-now-btn::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .pay-now-btn:active { opacity: 0.88; transform: scale(0.98); }
+    .pay-now-badge {
+      font-size: 10px; font-weight: 600; letter-spacing: 0.05em;
+      background: rgba(255,255,255,0.15); border-radius: 4px;
+      padding: 2px 6px; color: rgba(255,255,255,0.85);
+    }
+    .pay-now-divider {
+      display: flex; align-items: center; gap: 10px; width: 100%;
+    }
+    .pay-now-divider span { font-size: 11px; color: var(--text-3); white-space: nowrap; }
+    .pay-now-divider::before, .pay-now-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .upi-apps-row { display: flex; gap: 8px; width: 100%; }
+    .upi-app-btn {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
+      padding: 10px 6px; border-radius: 10px;
+      border: 1.5px solid var(--border); background: var(--bg);
+      font-size: 10px; font-weight: 600; color: var(--text-2);
+      cursor: pointer; text-decoration: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .upi-app-btn:active { background: var(--white); border-color: var(--orange); }
+    .upi-app-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  </style>
+</head>
+<body>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a href="freefire.html" class="back-btn" aria-label="Back">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M11 14l-5-5 5-5" stroke="#111118" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+      <div class="topbar-title">Checkout</div>
+      <div class="topbar-spacer"></div>
+    </div>
+  </div>
+
+  <!-- ORDER SUMMARY -->
+  <div class="section">
+    <div class="section-label">Order Summary</div>
+    <div class="order-row">
+      <div class="order-thumb">
+        <img src="dia.jpg" alt="Diamond Pack" onerror="this.style.display='none'"/>
+      </div>
+      <div class="order-info">
+        <div class="order-game">Free Fire Max &nbsp;&bull;&nbsp; Diamond Top Up</div>
+        <div class="order-pack" id="packDisplay">— Diamonds</div>
+      </div>
+      <div class="order-price" id="priceDisplay">&#8377;0</div>
+    </div>
+  </div>
+
+  <!-- PLAYER DETAILS -->
+  <div class="section">
+    <div class="section-label">Player Details</div>
+    <div class="pid-display">
+      <div>
+        <div class="pid-label-sm">Free Fire Player ID</div>
+        <div class="pid-value" id="pidDisplay">—</div>
+      </div>
+      <a href="freefire.html" class="pid-edit">Edit</a>
+    </div>
+    <div style="height:10px;"></div>
+    <div class="info-row" style="padding-top:0;">
+      <span class="info-key">Delivery Time</span>
+      <span class="info-val green">Instant &mdash; 5 to 15 minutes</span>
+    </div>
+    <div class="info-row">
+      <span class="info-key">Delivery Method</span>
+      <span class="info-val">Direct to Account</span>
+    </div>
+  </div>
+
+  <!-- PRICE BREAKDOWN -->
+  <div class="section">
+    <div class="section-label">Price</div>
+    <div class="price-row">
+      <span class="price-key" id="packLabel">Pack</span>
+      <span class="price-val" id="basePrice">&#8377;0</span>
+    </div>
+    <div class="price-row">
+      <span class="price-key">Platform Fee</span>
+      <span class="price-val">&#8377;0</span>
+    </div>
+    <div class="price-row total">
+      <span class="price-key">Total Payable</span>
+      <span class="price-val" id="totalPrice">&#8377;0</span>
+    </div>
+  </div>
+
+  <!-- UPI PAYMENT -->
+  <div class="section">
+    <div class="section-label">Pay via UPI</div>
+
+    <!-- Toggle -->
+    <div class="pay-toggle">
+      <button class="pay-tab" id="tabQR" onclick="switchTab('qr')">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="1" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.4" fill="none"/>
+          <rect x="9" y="1" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.4" fill="none"/>
+          <rect x="1" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.4" fill="none"/>
+          <rect x="2.5" y="2.5" width="3" height="3" rx="0.5" fill="currentColor"/>
+          <rect x="10.5" y="2.5" width="3" height="3" rx="0.5" fill="currentColor"/>
+          <rect x="2.5" y="10.5" width="3" height="3" rx="0.5" fill="currentColor"/>
+          <rect x="9" y="9" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.4" fill="none"/>
+        </svg>
+        Scan QR Code
+      </button>
+      <button class="pay-tab" id="tabUPI" onclick="switchTab('upi')">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="1" y="4" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.4" fill="none"/>
+          <path d="M1 7h14" stroke="currentColor" stroke-width="1.3"/>
+          <rect x="3" y="9.5" width="4" height="1.5" rx="0.5" fill="currentColor" opacity="0.5"/>
+        </svg>
+        Enter UPI ID
+      </button>
+    </div>
+
+    <!-- QR PANEL -->
+    <div id="panelQR" class="upi-box" style="display:none;">
+      <!-- 15-min caution banner -->
+      <div class="qr-caution">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 1L13 12H1L7 1z" stroke="#D97706" stroke-width="1.3" fill="rgba(217,119,6,0.12)" stroke-linejoin="round"/>
+          <path d="M7 5.5v3" stroke="#D97706" stroke-width="1.4" stroke-linecap="round"/>
+          <circle cx="7" cy="10" r="0.7" fill="#D97706"/>
+        </svg>
+        QR is valid for <strong id="qrTimer">15:00</strong> — pay before it expires
+      </div>
+
+      <!-- QR CODE -->
+      <div class="qr-frame">
+        <img src="qr.png" alt="UPI QR Code"
+          onerror="this.parentElement.innerHTML='<div class=\'qr-placeholder\'><svg width=\'48\' height=\'48\' viewBox=\'0 0 48 48\' fill=\'none\'><rect x=\'4\' y=\'4\' width=\'17\' height=\'17\' rx=\'2\' stroke=\'#D8D9E0\' stroke-width=\'2\' fill=\'none\'/><rect x=\'27\' y=\'4\' width=\'17\' height=\'17\' rx=\'2\' stroke=\'#D8D9E0\' stroke-width=\'2\' fill=\'none\'/><rect x=\'4\' y=\'27\' width=\'17\' height=\'17\' rx=\'2\' stroke=\'#D8D9E0\' stroke-width=\'2\' fill=\'none\'/><rect x=\'9\' y=\'9\' width=\'7\' height=\'7\' rx=\'1\' fill=\'#D8D9E0\'/><rect x=\'32\' y=\'9\' width=\'7\' height=\'7\' rx=\'1\' fill=\'#D8D9E0\'/><rect x=\'9\' y=\'32\' width=\'7\' height=\'7\' rx=\'1\' fill=\'#D8D9E0\'/><rect x=\'27\' y=\'27\' width=\'17\' height=\'17\' rx=\'2\' stroke=\'#D8D9E0\' stroke-width=\'2\' fill=\'none\'/></svg><span>Place your QR code<br/>image as qr.png</span></div>'"
+        />
+      </div>
+
+      <div class="upi-steps">
+        <strong>How to pay</strong>
+        1. Open any UPI app (GPay, PhonePe, Paytm)<br/>
+        2. Scan the QR code above<br/>
+        3. Enter the exact amount: <strong id="upiAmount" style="color:var(--orange);">&#8377;0</strong><br/>
+        4. Complete the payment and take a screenshot<br/>
+        5. Upload the screenshot below and tap Complete Order
+      </div>
+
+      <!-- PAY NOW BUTTON -->
+      <div class="pay-now-divider"><span>or pay instantly</span></div>
+
+      <a id="payNowBtn" href="#" class="pay-now-btn" onclick="openUPI(event)">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M3 10h14M10 3l7 7-7 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Pay Now
+        <span class="pay-now-badge">Opens UPI App</span>
+      </a>
+
+      <div class="upi-apps-row">
+        <a id="gpayBtn" href="#" class="upi-app-btn" onclick="openGPay(event)">
+          <div class="upi-app-icon" style="background:#fff; border:1px solid #eee;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#e0e0e0" stroke-width="0.5"/><path d="M12 6.5C9 6.5 6.5 9 6.5 12S9 17.5 12 17.5c2.6 0 4.8-1.8 5.3-4.3H12v-2.2h7.5c.1.5.1.9.1 1.3 0 4.1-2.8 7-7.6 7-4.4 0-8-3.6-8-8s3.6-8 8-8c2.2 0 4 .8 5.4 2.1l-2.2 2.1C14 7 13.1 6.5 12 6.5z" fill="#4285F4"/></svg>
+          </div>
+          GPay
+        </a>
+        <a id="phonepeBtn" href="#" class="upi-app-btn" onclick="openPhonePe(event)">
+          <div class="upi-app-icon" style="background:#5f259f;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4 11h-3v5h-2v-5H8v-2h3V7h2v4h3v2z" fill="#fff"/></svg>
+          </div>
+          PhonePe
+        </a>
+        <a id="paytmBtn" href="#" class="upi-app-btn" onclick="openPaytm(event)">
+          <div class="upi-app-icon" style="background:#00BAF2;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#00BAF2"/><path d="M4 12h16M12 4v16" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+          </div>
+          Paytm
+        </a>
+        <a id="bhimBtn" href="#" class="upi-app-btn" onclick="openBHIM(event)">
+          <div class="upi-app-icon" style="background:#00529B;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#00529B"/><text x="12" y="17" font-size="11" fill="#fff" text-anchor="middle" font-weight="bold">UPI</text></svg>
+          </div>
+          BHIM
+        </a>
+      </div>
+
+      <!-- Screenshot reminder inside QR panel -->
+      <div class="screenshot-reminder">
+        <div class="screenshot-reminder-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="1.5" y="3.5" width="15" height="11" rx="2" stroke="#E8503A" stroke-width="1.5" fill="none"/>
+            <path d="M1.5 12.5l4-3.5 2.5 2 3-3 5 4" stroke="#E8503A" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="5.5" cy="7.5" r="1.3" stroke="#E8503A" stroke-width="1.2" fill="none"/>
+            <path d="M13 1.5v3M11.5 3H14.5" stroke="#E8503A" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="screenshot-reminder-text">
+          <div class="screenshot-reminder-title">Take a Screenshot After Paying</div>
+          <div class="screenshot-reminder-sub">Once payment is done, <strong>screenshot your success screen</strong> and upload it below — your order won't be confirmed without it.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPI ID PANEL -->
+    <div id="panelUPI" class="upi-box" style="display:none;">
+
+      <!-- Pay instantly via app -->
+      <a id="payNowBtnUPI" href="#" class="pay-now-btn" onclick="openUPI(event)">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M3 10h14M10 3l7 7-7 7" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Pay Now
+        <span class="pay-now-badge">Opens UPI App</span>
+      </a>
+
+      <!-- App shortcuts -->
+      <div class="upi-apps-row">
+        <a href="#" class="upi-app-btn" onclick="openGPay(event)">
+          <div class="upi-app-icon" style="background:#fff; border:1px solid #eee;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#fff" stroke="#e0e0e0" stroke-width="0.5"/><path d="M12 6.5C9 6.5 6.5 9 6.5 12S9 17.5 12 17.5c2.6 0 4.8-1.8 5.3-4.3H12v-2.2h7.5c.1.5.1.9.1 1.3 0 4.1-2.8 7-7.6 7-4.4 0-8-3.6-8-8s3.6-8 8-8c2.2 0 4 .8 5.4 2.1l-2.2 2.1C14 7 13.1 6.5 12 6.5z" fill="#4285F4"/></svg>
+          </div>
+          GPay
+        </a>
+        <a href="#" class="upi-app-btn" onclick="openPhonePe(event)">
+          <div class="upi-app-icon" style="background:#5f259f;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4 11h-3v5h-2v-5H8v-2h3V7h2v4h3v2z" fill="#fff"/></svg>
+          </div>
+          PhonePe
+        </a>
+        <a href="#" class="upi-app-btn" onclick="openPaytm(event)">
+          <div class="upi-app-icon" style="background:#00BAF2;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#00BAF2"/><path d="M4 12h16M12 4v16" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+          </div>
+          Paytm
+        </a>
+        <a href="#" class="upi-app-btn" onclick="openBHIM(event)">
+          <div class="upi-app-icon" style="background:#00529B;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#00529B"/><text x="12" y="17" font-size="11" fill="#fff" text-anchor="middle" font-weight="bold">UPI</text></svg>
+          </div>
+          BHIM
+        </a>
+      </div>
+
+      <div class="pay-now-divider"><span>or pay manually with UPI ID</span></div>
+
+      <div class="upi-id-pill">
+        <div>
+          <div class="upi-id-label">UPI ID</div>
+          <div class="upi-id-val" id="upiIdText">tgy@ptaxis</div>
+        </div>
+        <button class="copy-btn" onclick="copyUPI()">Copy</button>
+      </div>
+
+      <div class="upi-steps">
+        <strong>How to pay</strong>
+        1. Tap a UPI app above to auto-open with the amount pre-filled<br/>
+        2. Or open any UPI app, tap "Pay" &amp; enter the UPI ID<br/>
+        3. Enter the exact amount: <strong id="upiAmount2" style="color:var(--orange);">&#8377;0</strong><br/>
+        4. Complete the payment and take a screenshot<br/>
+        5. Upload the screenshot below and tap Complete Order
+      </div>
+
+      <!-- Screenshot reminder inside UPI panel -->
+      <div class="screenshot-reminder">
+        <div class="screenshot-reminder-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="1.5" y="3.5" width="15" height="11" rx="2" stroke="#E8503A" stroke-width="1.5" fill="none"/>
+            <path d="M1.5 12.5l4-3.5 2.5 2 3-3 5 4" stroke="#E8503A" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="5.5" cy="7.5" r="1.3" stroke="#E8503A" stroke-width="1.2" fill="none"/>
+            <path d="M13 1.5v3M11.5 3H14.5" stroke="#E8503A" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="screenshot-reminder-text">
+          <div class="screenshot-reminder-title">Take a Screenshot After Paying</div>
+          <div class="screenshot-reminder-sub">Once payment is done, <strong>screenshot your success screen</strong> and upload it below — your order won't be confirmed without it.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREENSHOT UPLOAD -->
+  <div class="section">
+    <div class="section-label">Payment Screenshot</div>
+
+    <!-- Upload alert -->
+    <div class="upload-alert">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 1.5L14.5 13H1.5L8 1.5z" stroke="#E8503A" stroke-width="1.4" fill="rgba(232,80,58,0.1)" stroke-linejoin="round"/>
+        <path d="M8 6.5v3.5" stroke="#E8503A" stroke-width="1.4" stroke-linecap="round"/>
+        <circle cx="8" cy="11.5" r="0.7" fill="#E8503A"/>
+      </svg>
+      <span><strong>Required:</strong> Screenshot your payment success screen and upload it here. Orders without proof cannot be processed.</span>
+    </div>
+
+    <div class="upload-area" id="uploadArea">
+      <input type="file" class="upload-input" id="screenshotInput" accept="image/*" onchange="handleFile(this)"/>
+      <div class="upload-icon">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <rect x="2" y="6" width="28" height="20" rx="3" stroke="#D8D9E0" stroke-width="1.8" fill="none"/>
+          <path d="M2 22l8-7 5 4 5-5 10 8" stroke="#D8D9E0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <circle cx="10" cy="13" r="2.5" stroke="#D8D9E0" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+      <div class="upload-title">Upload Payment Screenshot</div>
+      <div class="upload-sub">JPG, PNG, WEBP supported</div>
+      <div class="upload-preview" id="uploadPreview"><img id="previewImg" src="" alt="preview"/></div>
+      <div class="upload-name" id="uploadName"></div>
+    </div>
+  </div>
+
+  <!-- NOTE -->
+  <div style="padding: 0 16px; margin-top: 12px;">
+    <div class="note-box">
+      <strong>Important</strong>
+      Ensure your Player ID is correct before submitting. Diamonds are delivered directly to your Free Fire account. We are not responsible for orders placed with an incorrect Player ID.
+    </div>
+  </div>
+
+  <div style="height: 16px;"></div>
+
+  <!-- CONFIRM BAR -->
+  <div class="confirm-bar">
+    <button class="confirm-btn" id="confirmBtn" onclick="submitOrder()">Complete Order</button>
+    <div class="secure-note">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+        <path d="M6 1L10 3v3.5C10 8.9 8.2 10.7 6 11c-2.2-.3-4-2.1-4-4.5V3L6 1z" stroke="#9FA0B0" stroke-width="1.1" fill="none"/>
+        <path d="M4 6l1.5 1.5L8 4.5" stroke="#9FA0B0" stroke-width="1" stroke-linecap="round"/>
+      </svg>
+      Payment verified manually &mdash; safe &amp; secure
+    </div>
+  </div>
+
+  <!-- VERIFICATION OVERLAY -->
+  <div class="verify-overlay" id="verifyOverlay">
+    <div class="verify-sheet">
+      <div class="verify-drag-handle"></div>
+
+      <!-- SCANNING PHASE -->
+      <div class="verify-scan-wrap" id="verifyScanPhase">
+        <div class="verify-scan-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect x="3" y="7" width="26" height="18" rx="3" stroke="#F97316" stroke-width="1.7" fill="none"/>
+            <path d="M3 20l7-6 4 4 5-5 10 7" stroke="#F97316" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="10" cy="14" r="2.5" stroke="#F97316" stroke-width="1.4" fill="none"/>
+          </svg>
+        </div>
+        <div class="verify-title">Verifying Screenshot</div>
+        <div class="verify-sub">Analysing your payment proof…</div>
+
+        <div class="verify-steps">
+          <div class="vstep" id="vstep1">
+            <div class="vstep-icon">
+              <div class="spin"></div>
+              <svg class="tick" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg class="cross" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="#E8503A" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <span class="vstep-label">Reading image metadata</span>
+            <span class="vstep-status" id="vstep1-status">Checking…</span>
+          </div>
+          <div class="vstep" id="vstep2">
+            <div class="vstep-icon">
+              <div class="spin"></div>
+              <svg class="tick" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg class="cross" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="#E8503A" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <span class="vstep-label">Detecting UPI transaction ID</span>
+            <span class="vstep-status" id="vstep2-status">Pending…</span>
+          </div>
+          <div class="vstep" id="vstep3">
+            <div class="vstep-icon">
+              <div class="spin"></div>
+              <svg class="tick" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg class="cross" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="#E8503A" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <span class="vstep-label">Matching amount &amp; recipient</span>
+            <span class="vstep-status" id="vstep3-status">Pending…</span>
+          </div>
+          <div class="vstep" id="vstep4">
+            <div class="vstep-icon">
+              <div class="spin"></div>
+              <svg class="tick" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5 6.5-7" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg class="cross" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="#E8503A" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
+            <span class="vstep-label">Checking for screenshot edits</span>
+            <span class="vstep-status" id="vstep4-status">Pending…</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULT PHASE -->
+      <div class="verify-result" id="verifyResultPhase">
+        <div class="verify-result-icon">
+          <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+            <path d="M6 6l18 18M24 6L6 24" stroke="#E8503A" stroke-width="2.2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="verify-result-title">Screenshot Invalid</div>
+        <div class="verify-result-sub">
+          Our system could <strong>not verify</strong> this as a valid UPI payment screenshot.
+          This could be a random image, a screenshot from another transaction, or an edited file.
+        </div>
+        <div class="verify-reasons">
+          <div class="verify-reasons-title">Issues Detected</div>
+          <div class="verify-reason-item"><div class="verify-reason-dot"></div><span>No valid UPI transaction ID found in image</span></div>
+          <div class="verify-reason-item"><div class="verify-reason-dot"></div><span>Payment recipient does not match our UPI ID</span></div>
+          <div class="verify-reason-item"><div class="verify-reason-dot"></div><span>Image may have been modified or is not from a UPI app</span></div>
+        </div>
+        <div class="verify-support-box">
+          <strong>Already paid? Contact Support</strong>
+          If you have genuinely paid, please reach out to our customer support with your Order ID and payment details. We will manually verify and deliver your diamonds.
+        </div>
+        <button class="verify-dismiss-btn" onclick="dismissVerify()">Upload a Different Screenshot</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SUCCESS OVERLAY -->
+  <div class="overlay" id="successOverlay">
+    <div class="sheet">
+      <div class="success-icon-wrap">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <path d="M6 16l7 7 13-13" stroke="#16A34A" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="success-title">Order Submitted</div>
+      <div class="success-sub">
+        Your payment screenshot has been received.<br/>
+        Diamonds will be delivered within 5&ndash;15 minutes after verification.
+      </div>
+      <div class="order-id-box">
+        <div class="oid-label">Order ID</div>
+        <div class="oid-val" id="orderIdDisplay">—</div>
+        <div class="oid-hint">Save this ID to track your order status</div>
+      </div>
+      <button class="sheet-btn" onclick="window.location.href='track.html?oid=' + window._orderId">Track My Order</button>
+      <a class="sheet-btn-sec" href="index.html">Back to Home</a>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    /* ── CONFIG — replace with your actual values ── */
+    const SUPABASE_URL = 'https://wckqbbakgcypjtnutipl.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indja3FiYmFrZ2N5cGp0bnV0aXBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1MTczNTcsImV4cCI6MjA5NzA5MzM1N30.S8cYbhI6ZhN_veKjfY3rDK-O9P0AsuMRaCaQVBBuv68';
+    const UPI_ID       = 'tgy@ptaxis';   // your UPI ID
+    /* ─────────────────────────────────────────── */
+
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    document.getElementById('upiIdText').textContent = UPI_ID;
+
+    /* ── READ URL PARAMS ── */
+    const params   = new URLSearchParams(window.location.search);
+    const pid      = params.get('pid')      || '—';
+    const diamonds = params.get('diamonds') || '—';
+    const price    = params.get('price')    || '0';
+
+    document.getElementById('pidDisplay').textContent   = pid;
+    document.getElementById('packDisplay').textContent  = diamonds + ' Diamonds';
+    document.getElementById('priceDisplay').textContent = '\u20B9' + price;
+    document.getElementById('packLabel').textContent    = diamonds + ' Diamonds';
+    document.getElementById('basePrice').textContent    = '\u20B9' + price;
+    document.getElementById('totalPrice').textContent   = '\u20B9' + price;
+    document.getElementById('upiAmount').textContent    = '\u20B9' + price;
+    document.getElementById('upiAmount2').textContent   = '\u20B9' + price;
+
+    /* ── UPDATE PAGE TITLE ── */
+    document.title = diamonds + ' Diamonds — Checkout | Criminal Store';
+
+    /* ── PAY METHOD TOGGLE ── */
+    function switchTab(tab) {
+      const isQR  = tab === 'qr';
+      const isUPI = tab === 'upi';
+      document.getElementById('panelQR').style.display  = isQR  ? 'flex' : 'none';
+      document.getElementById('panelUPI').style.display = isUPI ? 'flex' : 'none';
+      document.getElementById('tabQR').classList.toggle('active', isQR);
+      document.getElementById('tabUPI').classList.toggle('active', isUPI);
+      if (isQR && !qrTimerStarted) startQRTimer();
+    }
+
+    /* ── QR 15-MIN COUNTDOWN ── */
+    let qrTimerStarted = false;
+    let qrSeconds = 15 * 60;
+    let qrInterval = null;
+
+    function startQRTimer() {
+      qrTimerStarted = true;
+      updateQRTimer();
+      qrInterval = setInterval(() => {
+        qrSeconds--;
+        updateQRTimer();
+        if (qrSeconds <= 0) {
+          clearInterval(qrInterval);
+          const caution = document.querySelector('.qr-caution');
+          caution.classList.add('expired');
+          caution.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1L13 12H1L7 1z" stroke="#E8503A" stroke-width="1.3" fill="rgba(232,80,58,0.12)" stroke-linejoin="round"/><path d="M7 5.5v3" stroke="#E8503A" stroke-width="1.4" stroke-linecap="round"/><circle cx="7" cy="10" r="0.7" fill="#E8503A"/></svg> QR has <strong>expired</strong> — please refresh the page to get a new QR`;
+        }
+      }, 1000);
+    }
+
+    function updateQRTimer() {
+      const m = String(Math.floor(qrSeconds / 60)).padStart(2, '0');
+      const s = String(qrSeconds % 60).padStart(2, '0');
+      const el = document.getElementById('qrTimer');
+      if (el) {
+        el.textContent = m + ':' + s;
+        el.style.color = qrSeconds <= 60 ? 'var(--red)' : '#B45309';
+      }
+    }
+
+    // Timer starts only when user clicks QR tab
+    // startQRTimer(); — removed, no default tab
+
+    /* ── COPY UPI ── */
+    function copyUPI() {
+      navigator.clipboard.writeText(UPI_ID).then(() => showToast('UPI ID copied'));
+    }
+
+    /* ── FILE UPLOAD ── */
+    let screenshotFile = null;
+
+    function handleFile(input) {
+      const file = input.files[0];
+      if (!file) return;
+      screenshotFile = file;
+      const url = URL.createObjectURL(file);
+      document.getElementById('previewImg').src = url;
+      document.getElementById('uploadPreview').style.display = 'block';
+      document.getElementById('uploadName').textContent = file.name;
+      document.getElementById('uploadName').style.display = 'block';
+      document.getElementById('uploadArea').classList.add('has-file');
+
+      // Trigger fake verification
+      runVerification();
+    }
+
+    /* ── FAKE VERIFICATION FLOW ── */
+    function runVerification() {
+      // Reset all steps to spinner state
+      [1,2,3,4].forEach(n => {
+        const step = document.getElementById('vstep' + n);
+        step.classList.remove('done', 'fail');
+        document.getElementById('vstep' + n + '-status').textContent = n === 1 ? 'Checking…' : 'Pending…';
+      });
+
+      // Show overlay, scanning phase
+      document.getElementById('verifyScanPhase').style.display = 'block';
+      document.getElementById('verifyResultPhase').classList.remove('show');
+      document.getElementById('verifyOverlay').classList.add('show');
+
+      // Step timings: step 1 done, step 2 done, step 3 FAIL, step 4 never reached → show result
+      setTimeout(() => {
+        markStep(1, 'done', 'Valid image');
+      }, 900);
+
+      setTimeout(() => {
+        markStep(2, 'done', 'Scanned');
+        document.getElementById('vstep3-status').textContent = 'Checking…';
+      }, 1800);
+
+      setTimeout(() => {
+        markStep(3, 'fail', 'Mismatch');
+        document.getElementById('vstep4-status').textContent = 'Checking…';
+      }, 2700);
+
+      setTimeout(() => {
+        markStep(4, 'fail', 'Detected');
+      }, 3400);
+
+      setTimeout(() => {
+        // Switch to result phase
+        document.getElementById('verifyScanPhase').style.display = 'none';
+        document.getElementById('verifyResultPhase').classList.add('show');
+      }, 4200);
+    }
+
+    function markStep(n, state, statusText) {
+      const step = document.getElementById('vstep' + n);
+      step.classList.remove('done', 'fail');
+      step.classList.add(state);
+      document.getElementById('vstep' + n + '-status').textContent = statusText;
+    }
+
+    function dismissVerify() {
+      document.getElementById('verifyOverlay').classList.remove('show');
+      // Reset the file input so they can re-upload
+      const input = document.getElementById('screenshotInput');
+      input.value = '';
+      screenshotFile = null;
+      document.getElementById('uploadPreview').style.display = 'none';
+      document.getElementById('uploadName').style.display = 'none';
+      document.getElementById('uploadArea').classList.remove('has-file');
+    }
+
+    window.dismissVerify = dismissVerify;
+
+    /* ── GENERATE ORDER ID ── */
+    function genOrderId() {
+      const ts = Date.now().toString(36).toUpperCase();
+      const rnd = Math.random().toString(36).slice(2, 5).toUpperCase();
+      return 'CRM-' + ts + rnd;
+    }
+
+    /* ── TOAST ── */
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    /* ── SUBMIT ORDER ── */
+    async function submitOrder() {
+      if (!screenshotFile) {
+        showToast('Please upload your payment screenshot');
+        return;
+      }
+
+      const btn = document.getElementById('confirmBtn');
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+
+      try {
+        const orderId  = genOrderId();
+        const fileName = orderId + '_' + Date.now() + '.' + screenshotFile.name.split('.').pop();
+
+        /* 1. Upload screenshot to Supabase Storage */
+        const { data: uploadData, error: uploadError } = await db
+          .storage.from('payment-screenshots')
+          .upload(fileName, screenshotFile, { cacheControl: '3600', upsert: false });
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = db.storage
+          .from('payment-screenshots')
+          .getPublicUrl(fileName);
+
+        const screenshotUrl = urlData.publicUrl;
+
+        /* 2. Insert order row in Supabase */
+        const { error: dbError } = await db
+          .from('orders')
+          .insert([{
+            order_id:       orderId,
+            player_id:      pid,
+            diamonds:       parseInt(diamonds),
+            amount:         parseFloat(price),
+            screenshot_url: screenshotUrl,
+            status:         'pending',
+            created_at:     new Date().toISOString()
+          }]);
+
+        if (dbError) throw dbError;
+
+        /* 3. Show success */
+        window._orderId = orderId;
+        document.getElementById('orderIdDisplay').textContent = orderId;
+        document.getElementById('successOverlay').classList.add('show');
+
+      } catch (err) {
+        console.error(err);
+        showToast('Something went wrong. Please try again.');
+        btn.disabled = false;
+        btn.textContent = 'Complete Order';
+      }
+    }
+
+
+    /* ── UPI DEEP LINKS ── */
+    // Pack prices mapped from URL param — auto-fills amount in every UPI app
+    const PACK_PRICES = { 200:99, 379:149, 500:289, 750:399, 1000:549, 1540:750, 2400:939, 3900:1299, 5000:1899, 7500:2499, 8900:3459, 9999:4699 };
+
+    function getPayAmount() {
+      // Use price from URL param directly
+      return parseFloat(price) || (PACK_PRICES[parseInt(diamonds)] || 0);
+    }
+
+    function buildUPIUrl(app) {
+      const amt   = getPayAmount();
+      const pa    = encodeURIComponent(UPI_ID);
+      const pn    = encodeURIComponent("Criminal Store");
+      const am    = amt.toFixed(2);
+      const tn    = encodeURIComponent(diamonds + " Diamonds - " + pid);
+      const base  = "upi://pay?pa=" + pa + "&pn=" + pn + "&am=" + am + "&cu=INR&tn=" + tn;
+      if (app === "gpay")   return "gpay://upi/pay?pa=" + pa + "&pn=" + pn + "&am=" + am + "&cu=INR&tn=" + tn;
+      if (app === "phonepe") return "phonepe://pay?pa=" + pa + "&pn=" + pn + "&am=" + am + "&cu=INR&tn=" + tn;
+      if (app === "paytm")  return "paytmmp://pay?pa=" + pa + "&pn=" + pn + "&am=" + am + "&cu=INR&tn=" + tn;
+      if (app === "bhim")   return "upi://pay?pa=" + pa + "&pn=" + pn + "&am=" + am + "&cu=INR&tn=" + tn;
+      return base;
+    }
+
+    function openUPI(e)     { e.preventDefault(); window.location.href = buildUPIUrl("upi"); }
+    function openGPay(e)    { e.preventDefault(); window.location.href = buildUPIUrl("gpay"); }
+    function openPhonePe(e) { e.preventDefault(); window.location.href = buildUPIUrl("phonepe"); }
+    function openPaytm(e)   { e.preventDefault(); window.location.href = buildUPIUrl("paytm"); }
+    function openBHIM(e)    { e.preventDefault(); window.location.href = buildUPIUrl("bhim"); }
+
+    window.openUPI     = openUPI;
+    window.openGPay    = openGPay;
+    window.openPhonePe = openPhonePe;
+    window.openPaytm   = openPaytm;
+    window.openBHIM    = openBHIM;
+    /* expose to inline onclick handlers */
+    window.copyUPI     = copyUPI;
+    window.handleFile  = handleFile;
+    window.submitOrder = submitOrder;
+    window.switchTab   = switchTab;
+  })();
+  </script>
+</body>
+</html>
