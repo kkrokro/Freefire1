@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Free Fire Max — Diamond Top Up | Criminal Store</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #F2F3F7;
+      --white: #FFFFFF;
+      --border: #E8E9EF;
+      --border-d: #D8D9E0;
+      --text-1: #111118;
+      --text-2: #6B6C7E;
+      --text-3: #9FA0B0;
+      --red: #E8503A;
+      --orange: #F97316;
+      --green: #16A34A;
+      --green-bg: rgba(22,163,74,0.08);
+      --r: 14px;
+      --rs: 10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text-1);
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 14px; line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      padding-bottom: 96px;
+      max-width: 480px; margin: 0 auto;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      position: sticky; top: 0; z-index: 200;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-inner {
+      padding: 0 16px; height: 58px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .hamburger {
+      width: 38px; height: 38px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; cursor: pointer; flex-shrink: 0;
+    }
+    .hamburger span { display: block; width: 16px; height: 1.5px; background: var(--text-2); border-radius: 1px; }
+    .topbar-logo { flex: 1; text-align: center; }
+    .logo-text { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; color: var(--text-1); }
+    .logo-text span { color: var(--orange); }
+    .topbar-wallet {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 20px; padding: 5px 10px 5px 8px; cursor: pointer;
+    }
+    .wallet-bal { font-size: 13px; font-weight: 600; color: var(--text-1); }
+
+    /* PRODUCT HEADER */
+    .product-header {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 16px; display: flex; align-items: flex-start; gap: 14px;
+    }
+    .product-thumb {
+      width: 72px; height: 72px; border-radius: 14px; overflow: hidden;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      flex-shrink: 0;
+    }
+    .product-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .product-info { flex: 1; }
+    .product-name { font-size: 17px; font-weight: 700; color: var(--text-1); margin-bottom: 2px; }
+    .product-sub { font-size: 12px; color: var(--text-2); margin-bottom: 10px; }
+    .product-badges { display: flex; flex-wrap: wrap; gap: 6px; }
+    .badge {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 500;
+      padding: 4px 8px; border-radius: 20px;
+      border: 1px solid var(--border);
+      color: var(--text-2); background: var(--bg);
+    }
+    .badge-green { color: var(--green); border-color: rgba(22,163,74,0.25); background: var(--green-bg); }
+    .badge-star { color: #F59E0B; border-color: rgba(245,158,11,0.25); background: rgba(245,158,11,0.08); }
+
+    /* PLAYER ID */
+    .pid-section { background: var(--white); margin: 10px 0 0; padding: 16px; }
+    .pid-label {
+      font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+      color: var(--text-2); text-transform: uppercase; margin-bottom: 12px;
+    }
+    .pid-field-label { font-size: 13px; font-weight: 500; color: var(--text-1); margin-bottom: 6px; }
+    .pid-input {
+      width: 100%; border: 1.5px solid var(--red); border-radius: var(--rs);
+      padding: 13px 14px; font-size: 15px; font-family: 'Inter', sans-serif;
+      color: var(--text-1); background: rgba(232,80,58,0.03); outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .pid-input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(249,115,22,0.12); }
+    .pid-hint { font-size: 11.5px; color: var(--text-3); margin-top: 7px; }
+
+    /* REGION SELECT */
+    .region-row { display: flex; gap: 8px; margin-top: 10px; }
+    .region-select {
+      flex: 1; border: 1.5px solid var(--border); border-radius: var(--rs);
+      padding: 10px 12px; font-size: 13px; font-family: 'Inter', sans-serif;
+      color: var(--text-1); background: var(--white); outline: none;
+      transition: border-color 0.2s;
+    }
+    .region-select:focus { border-color: var(--orange); }
+
+    /* VALIDATE BUTTON */
+    .validate-btn {
+      background: linear-gradient(135deg, #F97316, #EA580C);
+      color: #fff; border: none; border-radius: var(--rs);
+      padding: 10px 18px; font-size: 13px; font-weight: 700;
+      font-family: 'Inter', sans-serif; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      transition: opacity 0.2s, transform 0.1s; white-space: nowrap;
+    }
+    .validate-btn:active { opacity: 0.88; transform: scale(0.97); }
+    .validate-btn:disabled { background: var(--border); color: var(--text-3); cursor: default; }
+    .validate-btn .btn-spinner {
+      width: 13px; height: 13px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+      animation: vspin 0.6s linear infinite; display: none;
+    }
+    .validate-btn.loading .btn-spinner { display: block; }
+    .validate-btn.loading .btn-text { display: none; }
+    @keyframes vspin { to { transform: rotate(360deg); } }
+
+    /* PLAYER INLINE RESULT */
+    .player-inline {
+      display: none; margin-top: 8px;
+      align-items: center; gap: 6px;
+      animation: fadeIn 0.2s ease;
+    }
+    .player-inline.show { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: translateY(0); } }
+    .player-inline-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green); flex-shrink: 0;
+    }
+    .player-inline-text {
+      font-size: 12px; font-weight: 600; color: var(--green);
+    }
+    .player-err {
+      display: none; margin-top: 10px;
+      background: rgba(232,80,58,0.07); border: 1px solid rgba(232,80,58,0.2);
+      border-radius: var(--rs); padding: 10px 13px;
+      font-size: 12px; color: var(--red);
+    }
+    .player-err.show { display: block; }
+
+    /* FILTER TABS */
+    .filter-row {
+      padding: 14px 16px 0;
+      display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
+    }
+    .filter-row::-webkit-scrollbar { display: none; }
+    .filter-btn {
+      white-space: nowrap; padding: 7px 16px; border-radius: 20px;
+      border: 1.5px solid var(--border); background: var(--white);
+      font-size: 13px; font-weight: 500; color: var(--text-2); cursor: pointer;
+      transition: all 0.18s;
+    }
+    .filter-btn.active { background: var(--red); border-color: var(--red); color: #fff; }
+
+    /* SECTION HEADING */
+    .sec-head {
+      padding: 20px 16px 10px;
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2);
+    }
+
+    /* PACKS GRID */
+    .packs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px; }
+
+    .pack-card {
+      background: var(--white); border-radius: var(--r);
+      border: 1.5px solid var(--border); padding: 14px 12px;
+      cursor: pointer; position: relative;
+      transition: border-color 0.18s, box-shadow 0.18s, transform 0.12s;
+      user-select: none;
+    }
+    .pack-card:active { transform: scale(0.97); }
+    .pack-card.selected { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(249,115,22,0.14); }
+
+    .pack-check {
+      position: absolute; top: 8px; right: 8px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--orange); display: none; align-items: center; justify-content: center;
+    }
+    .pack-check svg { display: block; }
+    .pack-card.selected .pack-check { display: flex; }
+
+    .pack-img {
+      width: 44px; height: 44px; border-radius: 10px; overflow: hidden; margin-bottom: 10px;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+    }
+    .pack-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pack-name { font-size: 13px; font-weight: 600; color: var(--text-1); margin-bottom: 6px; line-height: 1.3; }
+    .pack-price-row { display: flex; align-items: baseline; gap: 5px; }
+    .pack-price { font-size: 15px; font-weight: 700; color: var(--red); }
+
+    /* PASS CARDS */
+    .passes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px; }
+    .pass-card {
+      background: var(--white); border-radius: var(--r);
+      border: 1.5px solid var(--border); padding: 0;
+      cursor: pointer; position: relative;
+      transition: border-color 0.18s, box-shadow 0.18s, transform 0.12s;
+      user-select: none; overflow: hidden;
+    }
+    .pass-card:active { transform: scale(0.97); }
+    .pass-card.selected { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(249,115,22,0.14); }
+    .pass-card-img {
+      width: 100%; aspect-ratio: 16/9; overflow: hidden;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+    }
+    .pass-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pass-card-body { padding: 10px 12px 12px; }
+    .pass-check {
+      position: absolute; top: 8px; right: 8px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--orange); display: none; align-items: center; justify-content: center;
+      z-index: 2;
+    }
+    .pass-check svg { display: block; }
+    .pass-card.selected .pass-check { display: flex; }
+    .pass-badge {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      padding: 2px 7px; border-radius: 20px; margin-bottom: 6px;
+      letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    .pass-badge-week { background: rgba(249,115,22,0.12); color: var(--orange); }
+    .pass-badge-month { background: rgba(22,163,74,0.1); color: var(--green); }
+    .pass-name { font-size: 13px; font-weight: 600; color: var(--text-1); margin-bottom: 3px; line-height: 1.3; }
+    .pass-sub { font-size: 11px; color: var(--text-2); margin-bottom: 8px; }
+    .pass-price { font-size: 15px; font-weight: 700; color: var(--red); }
+
+    /* CHECKOUT BAR */
+    .checkout-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--white); border-top: 1px solid var(--border);
+      padding: 12px 16px; max-width: 480px; margin: 0 auto; z-index: 100;
+    }
+    .selection-info {
+      display: none; align-items: center; justify-content: space-between; padding: 0 0 10px;
+    }
+    .sel-text { font-size: 12px; color: var(--text-2); }
+    .sel-amount { font-size: 14px; font-weight: 700; color: var(--text-1); }
+    .checkout-btn {
+      display: block; width: 100%;
+      background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+      color: #fff; border: none; border-radius: 14px;
+      padding: 16px; font-size: 16px; font-weight: 700;
+      font-family: 'Inter', sans-serif; cursor: pointer; text-align: center;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .checkout-btn:active { opacity: 0.92; transform: scale(0.98); }
+
+    /* ERROR TOAST */
+    .toast {
+      position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
+      background: #1a1a2e; color: #fff;
+      padding: 10px 18px; border-radius: 8px;
+      font-size: 13px; font-weight: 500;
+      z-index: 999; opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="hamburger"><span></span><span></span><span></span></div>
+      <div class="topbar-logo"><span class="logo-text">CRIMINAL <span>STORE</span></span></div>
+      <div class="topbar-wallet">
+        <svg width="18" height="14" viewBox="0 0 18 14" fill="none">
+          <rect x="0.5" y="2.5" width="17" height="11" rx="2.5" stroke="#6B6C7E" stroke-width="1.3" fill="none"/>
+          <path d="M1 5h16" stroke="#6B6C7E" stroke-width="1.3"/>
+          <rect x="12" y="7.5" width="3" height="2" rx="1" fill="#6B6C7E" opacity="0.6"/>
+        </svg>
+        <span class="wallet-bal">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCT HEADER -->
+  <div class="product-header">
+    <div class="product-thumb">
+      <img src="ff.jpg" alt="Free Fire Max"
+        onerror="this.style.display='none'"/>
+    </div>
+    <div class="product-info">
+      <div class="product-name">Free Fire Max</div>
+      <div class="product-sub">Free Fire &nbsp;&bull;&nbsp; Diamond Top Up</div>
+      <div class="product-badges">
+        <span class="badge badge-star">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+            <path d="M5.5 1l1.18 3.55H10L7.12 6.65l1.07 3.35L5.5 8.1 2.81 10l1.07-3.35L1 4.55h3.32L5.5 1z" fill="#F59E0B"/>
+          </svg>
+          4.8/5 Rating
+        </span>
+        <span class="badge badge-green">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+            <path d="M5.5 1L9.5 3v4L5.5 10 1.5 7V3L5.5 1z" stroke="#16A34A" stroke-width="1.1" fill="none"/>
+            <path d="M3.5 5.5l1.5 1.5 2.5-2.5" stroke="#16A34A" stroke-width="1.1" stroke-linecap="round"/>
+          </svg>
+          Verified Seller
+        </span>
+        <span class="badge badge-green">
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+            <circle cx="5.5" cy="5.5" r="4" stroke="#16A34A" stroke-width="1.1" fill="none"/>
+            <path d="M3.5 5.5l1.5 1.5 2.5-2.5" stroke="#16A34A" stroke-width="1.1" stroke-linecap="round"/>
+          </svg>
+          Secure Payment
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAYER ID -->
+  <div class="pid-section">
+    <div class="pid-label">Enter Your Player ID</div>
+    <div class="pid-field-label">Player ID</div>
+    <input type="text" class="pid-input" id="playerIdInput" placeholder="Enter Free Fire Player ID" inputmode="numeric"/>
+
+    <!-- Region + Validate -->
+    <div class="region-row">
+      <select class="region-select" id="regionSelect">
+        <option value="IND">🇮🇳 India (IND)</option>
+        <option value="SG">🇸🇬 Singapore (SG)</option>
+        <option value="ID">🇮🇩 Indonesia (ID)</option>
+        <option value="ME">🌍 Middle East (ME)</option>
+        <option value="VN">🇻🇳 Vietnam (VN)</option>
+        <option value="TH">🇹🇭 Thailand (TH)</option>
+        <option value="TW">🇹🇼 Taiwan (TW)</option>
+        <option value="US">🇺🇸 US/NA (US)</option>
+        <option value="EU">🇪🇺 Europe (EU)</option>
+        <option value="BR">🇧🇷 Brazil (BR)</option>
+        <option value="PK">🇵🇰 Pakistan (PK)</option>
+        <option value="BD">🇧🇩 Bangladesh (BD)</option>
+        <option value="CIS">🌐 CIS</option>
+      </select>
+      <button class="validate-btn" id="validateBtn" onclick="validateUID()">
+        <div class="btn-spinner"></div>
+        <span class="btn-text">Validate ID</span>
+      </button>
+    </div>
+
+    <!-- Player inline result -->
+    <div class="player-inline" id="playerCard">
+      <div class="player-inline-dot"></div>
+      <span class="player-inline-text" id="playerInlineText"></span>
+    </div>
+
+    <!-- Error -->
+    <div class="player-err" id="playerErr"></div>
+
+    <div class="pid-hint" style="margin-top:8px;">You can find your Player ID on your Free Fire profile page</div>
+  </div>
+
+  <!-- FILTER TABS -->
+  <div class="filter-row" id="filterRow">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="passes">Passes</button>
+    <button class="filter-btn" data-filter="diamonds">Diamonds</button>
+  </div>
+
+  <!-- PASSES SECTION -->
+  <div class="sec-head" id="passesSection">MEMBERSHIP PASSES</div>
+  <div class="passes-grid" id="passesGrid">
+
+    <!-- Weekly Pass -->
+    <div class="pass-card" data-type="pass" data-name="Weekly Pass" data-diamonds="0" data-price="99" onclick="selectPack(this)">
+      <div class="pass-check">
+        <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
+          <path d="M1 4l3 3 6-6" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="pass-card-img">
+        <img src="weekly.jpg" alt="Weekly Pass" onerror="this.style.display='none'"/>
+      </div>
+      <div class="pass-card-body">
+        <div class="pass-badge pass-badge-week">Weekly</div>
+        <div class="pass-name">Weekly Pass</div>
+        <div class="pass-sub">7-day membership benefits</div>
+        <div class="pass-price">&#8377;99</div>
+      </div>
+    </div>
+
+    <!-- Monthly Pass -->
+    <div class="pass-card" data-type="pass" data-name="Monthly Pass" data-diamonds="0" data-price="149" onclick="selectPack(this)">
+      <div class="pass-check">
+        <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
+          <path d="M1 4l3 3 6-6" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="pass-card-img">
+        <img src="month.jpg" alt="Monthly Pass" onerror="this.style.display='none'"/>
+      </div>
+      <div class="pass-card-body">
+        <div class="pass-badge pass-badge-month">Monthly</div>
+        <div class="pass-name">Monthly Pass</div>
+        <div class="pass-sub">30-day membership + 300 bonus diamonds</div>
+        <div class="pass-price">&#8377;149</div>
+      </div>
+    </div>
+
+    <!-- 300+300 Diamond Pack -->
+    <div class="pass-card" style="grid-column: 1 / -1;" data-type="pass" data-name="300+300 Diamond Pack" data-diamonds="600" data-price="199" onclick="selectPack(this)">
+      <div class="pass-check">
+        <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
+          <path d="M1 4l3 3 6-6" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div style="display:flex; align-items:center; gap:14px; padding:14px 14px 14px 14px;">
+        <div style="width:72px; height:72px; border-radius:12px; overflow:hidden; background:linear-gradient(135deg,#1a1a2e,#16213e); flex-shrink:0;">
+          <img src="dia.jpg" alt="300+300 Diamond Pack" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display='none'"/>
+        </div>
+        <div style="flex:1;">
+          <div class="pass-badge" style="background:rgba(232,80,58,0.1);color:var(--red);">Best Value</div>
+          <div class="pass-name">300 + 300 Diamond Pack</div>
+          <div class="pass-sub">600 diamonds total — bonus 300 free!</div>
+          <div class="pass-price">&#8377;199</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DIAMONDS SECTION -->
+  <div class="sec-head" id="diamondsSection">DIAMONDS</div>
+  <div class="packs-grid" id="packsGrid"></div>
+
+  <div style="height: 20px;"></div>
+
+  <!-- CHECKOUT BAR -->
+  <div class="checkout-bar">
+    <div class="selection-info" id="selectionInfo">
+      <span class="sel-text" id="selText"></span>
+      <span class="sel-amount" id="selAmount"></span>
+    </div>
+    <button class="checkout-btn" id="checkoutBtn" onclick="goCheckout()">Proceed to Checkout</button>
+  </div>
+
+  <script>
+  (function() {
+    /* ── HL GAMING API CONFIG — 4 keys, 25/day each = 100/day total ── */
+    const HL_BASE = 'https://proapis.hlgamingofficial.com/main/games/freefire/account/api';
+
+    // Each entry: { useruid, api }
+    // Replace KEY_2 / KEY_3 / KEY_4 and their usruids when you get them
+    const HL_KEYS = [
+      { useruid: 'ROHq9JInBROFLLS5iIoG1pxDaMR2', api: 'HTUTWRk3khgB1NJIHWVjSifWEaNpiQ' },
+      { useruid: '4oz43VOcawMnNm1rRzQa0B6xUzC2',               api: 'kBxPa3kNpQFvH0tNX8aF28DPMr2D2h' },
+      { useruid: '7rUvZsmQVIg5CKgi0IcGZiyt5wW2',               api: 'O8Hl1KCsW67j3VTsNmedhtiKEV68wK' },
+      { useruid: 'mAUS4ciPeDOeRlNcFefNmmnM42K3',               api: 'uYWcAFn3p92eXacnTuAUozGfWenKa7' },
+    ];
+
+    // Track which key to use next (persists across page sessions via localStorage)
+    function getNextKey() {
+      const DAY  = new Date().toDateString();
+      let state  = {};
+      try { state = JSON.parse(localStorage.getItem('hlkey_state') || '{}'); } catch(e) {}
+
+      // reset counts on new day
+      if (state.day !== DAY) state = { day: DAY, counts: [0,0,0,0], idx: 0 };
+
+      // find a key that still has quota (under 25)
+      const start = state.idx;
+      for (let i = 0; i < HL_KEYS.length; i++) {
+        const k = (start + i) % HL_KEYS.length;
+        if (state.counts[k] < 25) {
+          state.idx = (k + 1) % HL_KEYS.length; // next call starts from next key
+          state.counts[k]++;
+          localStorage.setItem('hlkey_state', JSON.stringify(state));
+          return HL_KEYS[k];
+        }
+      }
+      return null; // all 100 used today
+    }
+
+    /* ── VALIDATE UID ── */
+    let validatedUID = null; // track if user validated
+
+    window.validateUID = async function () {
+      const pid = document.getElementById('playerIdInput').value.trim();
+      const region = document.getElementById('regionSelect').value;
+      const btn  = document.getElementById('validateBtn');
+      const card = document.getElementById('playerCard');
+      const err  = document.getElementById('playerErr');
+
+      card.classList.remove('show');
+      err.classList.remove('show');
+      validatedUID = null;
+
+      if (!pid) { showToast('Enter your Player ID first'); return; }
+      if (!/^\d+$/.test(pid)) { showToast('Player ID must be numbers only'); return; }
+
+      btn.disabled = true;
+      btn.classList.add('loading');
+
+      try {
+        const key = getNextKey();
+        if (!key) {
+          err.textContent = 'Daily validation limit reached (100/day). Try again tomorrow.';
+          err.classList.add('show');
+          btn.disabled = false;
+          btn.classList.remove('loading');
+          return;
+        }
+
+        const url = `${HL_BASE}?sectionName=AccountInfo&PlayerUid=${pid}&region=${region.toUpperCase()}&useruid=${key.useruid}&api=${key.api}`;
+        const res = await fetch(url);
+        const json = await res.json();
+
+        // API returns data directly inside json.result
+        const info  = json?.result || {};
+        const name  = info.AccountName  || null;
+        const level = info.AccountLevel || null;
+
+        if (!name) {
+          err.textContent = 'Player not found. Check your ID and region, then try again.';
+          err.classList.add('show');
+        } else {
+          // show compact inline
+          const lvlText = level ? ` • Lv.${level}` : '';
+          document.getElementById('playerInlineText').textContent = `✓ ${name}${lvlText}`;
+          card.classList.add('show');
+          validatedUID = pid;
+          showToast('✓ Player verified: ' + name);
+        }
+
+      } catch (e) {
+        err.textContent = 'Could not reach the API. Check your connection and try again.';
+        err.classList.add('show');
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('loading');
+      }
+    };
+
+    // allow Enter key on input to trigger validate
+    document.getElementById('playerIdInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') window.validateUID();
+    });
+    /* ── PACK DATA ── */
+    const PACKS = [
+      { diamonds: 200,  price: 99   },
+      { diamonds: 379,  price: 149  },
+      { diamonds: 500,  price: 289  },
+      { diamonds: 750,  price: 399  },
+      { diamonds: 1000, price: 549  },
+      { diamonds: 1540, price: 750  },
+      { diamonds: 2400, price: 939  },
+      { diamonds: 3900, price: 1299 },
+      { diamonds: 5000, price: 1899 },
+      { diamonds: 7500, price: 2499 },
+      { diamonds: 8900, price: 3459 },
+      { diamonds: 9999, price: 4699 },
+    ];
+
+    /* ── RENDER PACKS ── */
+    const grid = document.getElementById('packsGrid');
+    PACKS.forEach((p, i) => {
+      grid.innerHTML += `
+        <div class="pack-card" data-idx="${i}" data-diamonds="${p.diamonds}" data-price="${p.price}" onclick="selectPack(this)">
+          <div class="pack-check">
+            <svg width="11" height="8" viewBox="0 0 11 8" fill="none">
+              <path d="M1 4l3 3 6-6" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="pack-img">
+            <img src="dia.jpg" alt="${p.diamonds} Diamonds" onerror="this.style.display='none'"/>
+          </div>
+          <div class="pack-name">${p.diamonds} Diamonds</div>
+          <div class="pack-price-row">
+            <span class="pack-price">&#8377;${p.price}</span>
+          </div>
+        </div>`;
+    });
+
+    /* ── SELECTION ── */
+    let selectedCard = null;
+
+    function selectPack(card) {
+      if (selectedCard && selectedCard !== card) selectedCard.classList.remove('selected');
+      if (selectedCard === card) {
+        card.classList.remove('selected');
+        selectedCard = null;
+        updateBar(null);
+      } else {
+        card.classList.add('selected');
+        selectedCard = card;
+        updateBar(card);
+      }
+    }
+
+    function updateBar(card) {
+      const info = document.getElementById('selectionInfo');
+      if (card) {
+        const isPass = card.dataset.type === 'pass';
+        const label = isPass ? card.dataset.name : card.dataset.diamonds + ' Diamonds';
+        document.getElementById('selText').textContent = label;
+        document.getElementById('selAmount').textContent = '\u20B9' + card.dataset.price;
+        info.style.display = 'flex';
+      } else {
+        info.style.display = 'none';
+      }
+    }
+
+    /* ── TOAST ── */
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    /* ── CHECKOUT ── */
+    window.goCheckout = function goCheckout() {
+      const pid = document.getElementById('playerIdInput').value.trim();
+      if (!selectedCard) { showToast('Please select a diamond pack'); return; }
+      if (!pid) {
+        document.getElementById('playerIdInput').focus();
+        showToast('Please enter your Free Fire Player ID');
+        return;
+      }
+      if (!validatedUID) {
+        showToast('Please validate your Player ID first');
+        return;
+      }
+      const isPass = selectedCard.dataset.type === 'pass';
+      const p = new URLSearchParams({
+        pid,
+        diamonds: selectedCard.dataset.diamonds,
+        price: selectedCard.dataset.price,
+        ...(isPass ? { name: selectedCard.dataset.name } : {})
+      });
+      window.location.href = 'checkout.html?' + p.toString();
+    };
+
+    /* ── FILTER ── */
+    document.getElementById('filterRow').addEventListener('click', e => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const f = btn.dataset.filter;
+      const passSection = document.getElementById('passesSection');
+      const passGrid = document.getElementById('passesGrid');
+      const diaSection = document.getElementById('diamondsSection');
+      const diaGrid = document.getElementById('packsGrid');
+      if (f === 'all') {
+        passSection.style.display = ''; passGrid.style.display = '';
+        diaSection.style.display = '';  diaGrid.style.display = '';
+      } else if (f === 'passes') {
+        passSection.style.display = ''; passGrid.style.display = '';
+        diaSection.style.display = 'none'; diaGrid.style.display = 'none';
+      } else {
+        passSection.style.display = 'none'; passGrid.style.display = 'none';
+        diaSection.style.display = '';  diaGrid.style.display = '';
+      }
+    });
+
+    /* ── PID INPUT STYLE ── */
+    const pidEl = document.getElementById('playerIdInput');
+    pidEl.addEventListener('focus', () => { pidEl.style.borderColor = '#F97316'; });
+    pidEl.addEventListener('blur',  () => { pidEl.style.borderColor = '#E8503A'; });
+
+    /* expose goCheckout globally so onclick="" can reach it */
+    window.goCheckout = goCheckout;
+    window.selectPack = selectPack;
+  })();
+  </script>
+</body>
+</html>
